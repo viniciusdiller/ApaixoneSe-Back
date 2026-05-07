@@ -1,13 +1,20 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// O Prisma chama as tabelas de "model"
+model User {
+  id        String   @id @default(uuid()) // Gera um ID único automaticamente
+  nome      String
+  usuario   String   @unique              // O @unique garante que não existam 2 iguais no banco
+  email     String   @unique
+  senha     String
+  createdAt DateTime @default(now())      // O banco preenche a data sozinho
+
+  @@map("usuarios") // Opcional: faz a tabela no MySQL se chamar "usuarios" em vez de "User"
 }

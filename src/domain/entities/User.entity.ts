@@ -1,13 +1,16 @@
+//
+
 export class User {
   public id?: string;
   public nome: string;
   public usuario: string;
   public email: string;
   public senha: string;
-  public pontos: number;
   public createdAt?: Date;
 
-  // O construtor monta o objeto quando o instanciamos
+  // O construtor é a função que é chamada automaticamente quando fazemos `new User(...)`.
+  // Aqui usamos o "Omit" para dizer: "Me passe todos os dados do User, MENOS o id e o createdAt,
+  // porque esses dois eu recebo por fora, se existirem".
   constructor(
     props: Omit<User, "id" | "createdAt">,
     id?: string,
@@ -18,13 +21,13 @@ export class User {
     this.usuario = props.usuario;
     this.email = props.email;
     this.senha = props.senha;
-    this.pontos = props.pontos ?? 0; // Se não passar pontos, começa com 0
     this.createdAt = createdAt ?? new Date();
 
     this.validate();
   }
 
-  // Regra de negócio pura: um usuário não pode ter email em branco
+  // 'private' significa que essa função só pode ser chamada por dentro desta própria classe.
+  // Nenhum Controller consegue chamar user.validate() de fora.
   private validate() {
     if (!this.nome || this.nome.trim() === "") {
       throw new Error("O nome é obrigatório.");

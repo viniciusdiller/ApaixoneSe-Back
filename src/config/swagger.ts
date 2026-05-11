@@ -12,10 +12,46 @@ const options = {
     },
     // Definimos as categorias (tags) aqui
     tags: [
+      { name: "Autenticação", description: "Rotas de login e segurança" },
       { name: "Usuários", description: "Gerenciamento de contas de usuários" },
     ],
     // DEFINIMOS AS ROTAS DIRETAMENTE AQUI, EM FORMATO DE OBJETO!
     paths: {
+      "/api/auth/login": {
+        post: {
+          summary: "Autentica um usuário e retorna um token JWT",
+          tags: ["Autenticação"],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["identificador", "senha"],
+                  properties: {
+                    identificador: {
+                      type: "string",
+                      example: "viniciusdiller",
+                    },
+                    senha: {
+                      type: "string",
+                      format: "password",
+                      example: "SenhaSegura123!",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Login efetuado com sucesso (Retorna o Token)",
+            },
+            "401": { description: "Credenciais incorretas" },
+            "500": { description: "Erro interno do servidor" },
+          },
+        },
+      },
       "/api/users/register": {
         post: {
           summary: "Cria uma nova conta de usuário",

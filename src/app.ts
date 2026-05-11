@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
 import { setupSwagger } from "./config/swagger";
+
 import userRoutes from "./infrastructure/web/routes/user.routes";
+import authRoutes from "./infrastructure/web/routes/auth.routes";
 
 const app = express();
 
@@ -25,7 +27,7 @@ setupSwagger(app);
 // ROTAS DA APLICAÇÃO
 // ==========================================
 app.use("/api/users", userRoutes);
-
+app.use("/api/auth", authRoutes);
 // Rota de Health Check (Segurança: ajuda a monitorar se o servidor está vivo)
 app.get("/health", (req, res) => {
   res.json({ status: "ok", time: new Date().toISOString() });

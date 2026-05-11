@@ -12,6 +12,7 @@ export class UserMapper {
       nome: user.nome,
       usuario: user.usuario,
       email: user.email,
+      perfil: user.perfil,
       createdAt: user.createdAt as Date,
     };
   }

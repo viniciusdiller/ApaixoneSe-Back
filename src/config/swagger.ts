@@ -28,9 +28,12 @@ const options = {
                   type: "object",
                   required: ["nome", "usuario", "email", "senha"],
                   properties: {
-                    nome: { type: "string", example: "Vinícius Valle" },
-                    usuario: { type: "string", example: "viniciusvalle" },
-                    email: { type: "string", example: "vinicius@email.com" },
+                    nome: { type: "string", example: "Vinícius Diller" },
+                    usuario: { type: "string", example: "viniciusdiller" },
+                    email: {
+                      type: "string",
+                      example: "viniciusdiller.sgms@gmail.com",
+                    },
                     senha: {
                       type: "string",
                       format: "password",

@@ -18,6 +18,12 @@ export class CreateUserUseCase implements ICreateUserUseCase {
       throw new Error("Este email já está cadastrado.");
     }
 
+    if (data.perfil === "ADMIN") {
+      throw new Error(
+        "Não é permitido criar uma conta de administrador por este canal.",
+      );
+    }
+
     const usuarioExists = await this.userRepository.findByUsuario(data.usuario);
     if (usuarioExists) {
       throw new Error("Este nome de usuário (@) já está em uso.");
@@ -31,6 +37,7 @@ export class CreateUserUseCase implements ICreateUserUseCase {
       nome: data.nome,
       usuario: data.usuario,
       email: data.email,
+      perfil: data.perfil,
       senha: senhaCriptografada,
     });
 

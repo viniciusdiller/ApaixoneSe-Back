@@ -7,6 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Perfil {
+  USUARIO
+  PARCEIRO
+  ADMIN
+}
+
 // O Prisma chama as tabelas de "model"
 model User {
   id        String   @id @default(uuid()) // Gera um ID único automaticamente
@@ -14,6 +20,7 @@ model User {
   usuario   String   @unique              // O @unique garante que não existam 2 iguais no banco
   email     String   @unique
   senha     String
+  perfil    Perfil   @default(USUARIO)
   createdAt DateTime @default(now())      // O banco preenche a data sozinho
 
   @@map("usuarios") // Opcional: faz a tabela no MySQL se chamar "usuarios" em vez de "User"

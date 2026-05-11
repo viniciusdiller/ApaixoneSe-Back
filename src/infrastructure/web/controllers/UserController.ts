@@ -9,16 +9,14 @@ export class UserController {
   criarUsuario = async (req: Request, res: Response): Promise<void> => {
     try {
       // 1. Pegamos os dados que o usuário digitou no frontend
-      const { nome, usuario, email, senha } = req.body;
+      const { nome, usuario, email, senha, perfil } = req.body;
 
       // 2. Segurança Básica: Garantir que não mandaram um JSON vazio
       if (!nome || !usuario || !email || !senha) {
-        res
-          .status(400)
-          .json({
-            error:
-              "Todos os campos (nome, usuario, email e senha) são obrigatórios.",
-          });
+        res.status(400).json({
+          error:
+            "Todos os campos (nome, usuario, email e senha) são obrigatórios.",
+        });
         return; // O return vazio para a execução aqui
       }
 
@@ -28,6 +26,7 @@ export class UserController {
         usuario,
         email,
         senha,
+        perfil,
       });
 
       // 4. Se deu tudo certo, devolvemos o Status 201 (Created) e o usuário limpo (sem senha)
@@ -43,11 +42,9 @@ export class UserController {
       } else {
         // Se for um erro bizarro (ex: banco caiu), não mostramos detalhes ao usuário
         console.error("Erro Crítico no Servidor:", error);
-        res
-          .status(500)
-          .json({
-            error: "Erro interno do servidor. Tente novamente mais tarde.",
-          });
+        res.status(500).json({
+          error: "Erro interno do servidor. Tente novamente mais tarde.",
+        });
       }
     }
   };

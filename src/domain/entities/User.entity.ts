@@ -1,11 +1,11 @@
-//
-
+export type PerfilUsuario = "USUARIO" | "PARCEIRO" | "ADMIN";
 export class User {
   public id?: string;
   public nome: string;
   public usuario: string;
   public email: string;
   public senha: string;
+  public perfil: PerfilUsuario = "USUARIO";
   public createdAt?: Date;
 
   // O construtor é a função que é chamada automaticamente quando fazemos `new User(...)`.
@@ -21,6 +21,7 @@ export class User {
     this.usuario = props.usuario;
     this.email = props.email;
     this.senha = props.senha;
+    this.perfil = props.perfil ?? "USUARIO";
     this.createdAt = createdAt ?? new Date();
 
     this.validate();
@@ -37,6 +38,11 @@ export class User {
     }
     if (!this.email || !this.email.includes("@")) {
       throw new Error("Email inválido.");
+    }
+
+    const validPerfis: PerfilUsuario[] = ["USUARIO", "PARCEIRO", "ADMIN"];
+    if (!validPerfis.includes(this.perfil)) {
+      throw new Error("Perfil de usuário inválido.");
     }
   }
 }

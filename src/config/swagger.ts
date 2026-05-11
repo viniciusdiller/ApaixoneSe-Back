@@ -34,6 +34,11 @@ const options = {
                       type: "string",
                       example: "viniciusdiller.sgms@gmail.com",
                     },
+                    perfil: {
+                      type: "string",
+                      enum: ["USUARIO", "PARCEIRO", "ADMIN"],
+                      example: "USUARIO",
+                    },
                     senha: {
                       type: "string",
                       format: "password",

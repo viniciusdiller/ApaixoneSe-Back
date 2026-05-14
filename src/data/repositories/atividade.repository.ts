@@ -65,4 +65,10 @@ export class AtividadeRepository implements IAtividadeRepository {
       atividadePrisma.updatedAt,
     );
   }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.atividade.delete({
+      where: { id },
+    });
+  }
 }

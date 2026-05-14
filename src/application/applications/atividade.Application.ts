@@ -62,4 +62,13 @@ export class AtividadeApplication {
       createdAt: atividade.createdAt!,
     };
   }
+
+  async delete(id: string): Promise<void> {
+    const atividade = await this.atividadeRepository.findById(id);
+
+    if (!atividade) {
+      throw new NotFoundException("Atividade não encontrada.");
+    }
+    await this.atividadeRepository.delete(id);
+  }
 }

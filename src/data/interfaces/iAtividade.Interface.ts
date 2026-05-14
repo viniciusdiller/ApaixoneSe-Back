@@ -13,4 +13,6 @@ export interface IAtividadeRepository {
 
   // Busca os detalhes de apenas uma atividade clicada
   findById(id: string): Promise<Atividade | null>;
+
+  delete(id: string): Promise<void>;
 }

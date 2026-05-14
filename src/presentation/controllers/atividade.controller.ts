@@ -1,4 +1,13 @@
-import { Controller, Post, Get, Body, Param } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Get,
+  Delete,
+  Body,
+  Param,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from "@nestjs/swagger";
 import { AtividadeApplication } from "../../application/applications/atividade.Application";
 import { CreateAtividadeRequestDto } from "../dto/request/atividades/createAtividadeRequestDto";
@@ -52,5 +61,14 @@ export class AtividadeController {
   @ApiResponse({ status: 404, description: "Atividade não encontrada" })
   async findById(@Param("id") id: string): Promise<AtividadeResponseDto> {
     return this.atividadeApplication.findById(id);
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Deleta uma atividade pelo ID" })
+  @ApiResponse({ status: 204, description: "Atividade deletada com sucesso" })
+  @ApiResponse({ status: 404, description: "Atividade não encontrada" })
+  async delete(@Param("id") id: string): Promise<void> {
+    return this.atividadeApplication.delete(id);
   }
 }

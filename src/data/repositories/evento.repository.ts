@@ -52,6 +52,12 @@ export class EventoRepository implements IEventoRepository {
     );
   }
 
+  async delete(id: string): Promise<void> {
+    await this.prisma.eventos.delete({
+      where: { id },
+    });
+  }
+
   // ==========================================
   // GESTÃO DA IMAGEM DO MÊS
   // ==========================================

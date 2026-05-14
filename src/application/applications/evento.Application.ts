@@ -64,6 +64,16 @@ export class EventoApplication {
     return this.mapToResponseDto(evento);
   }
 
+  async delete(id: string): Promise<void> {
+    const evento = await this.eventoRepository.findById(id);
+
+    if (!evento) {
+      throw new NotFoundException("Evento não encontrado para exclusão.");
+    }
+
+    await this.eventoRepository.delete(id);
+  }
+
   async atualizarCapaDoMes(mes: Mes, imagemUrl: string): Promise<void> {
     await this.eventoRepository.upsertImagemMes(mes, imagemUrl);
   }

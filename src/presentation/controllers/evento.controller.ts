@@ -3,11 +3,14 @@ import {
   Get,
   Post,
   Put,
+  Delete,
   Body,
   Param,
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -56,6 +59,14 @@ export class EventoController {
   @ApiResponse({ status: 200, type: EventoResponseDto })
   async findById(@Param("id") id: string): Promise<EventoResponseDto> {
     return this.eventoApplication.findById(id);
+  }
+
+  @Delete(":id")
+  @ApiOperation({ summary: "Exclui um evento pelo ID" })
+  @ApiResponse({ status: 200, description: "Evento excluído com sucesso" })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async delete(@Param("id") id: string): Promise<void> {
+    return this.eventoApplication.delete(id);
   }
 
   // ROTA ESPECIAL: Atualizar a imagem de um mês

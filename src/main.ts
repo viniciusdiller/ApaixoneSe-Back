@@ -2,9 +2,11 @@ import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import { NestExpressApplication } from "@nestjs/platform-express";
+import { join } from "path";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Ativa o CORS (como você tinha no app.ts)
   app.enableCors();
@@ -12,10 +14,14 @@ async function bootstrap() {
   // Ativa a validação automática dos DTOs em toda a aplicação
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
+  // Isto permite que a pasta física 'uploads' seja acessível pelo navegador
+  app.useStaticAssets(join(__dirname, "..", "uploads"), {
+    prefix: "/uploads/",
+  });
+
   // Configuração automatizada do Swagger
   const config = new DocumentBuilder()
     .setTitle("Apaixone-Se API")
-    .setDescription("Documentação oficial do backend")
     .setVersion("1.0")
     .addBearerAuth()
     .build();

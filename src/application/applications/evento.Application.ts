@@ -64,8 +64,8 @@ export class EventoApplication {
     return this.mapToResponseDto(evento);
   }
 
-  async atualizarCapaDoMes(mes: Mes, dto: UpdateImagemMesDto): Promise<void> {
-    await this.eventoRepository.upsertImagemMes(mes, dto.imagemUrl);
+  async atualizarCapaDoMes(mes: Mes, imagemUrl: string): Promise<void> {
+    await this.eventoRepository.upsertImagemMes(mes, imagemUrl);
   }
 
   // ==========================================

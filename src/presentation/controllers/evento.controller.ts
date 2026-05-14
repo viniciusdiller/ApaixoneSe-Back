@@ -1,10 +1,34 @@
-import { Controller, Get, Post, Put, Body, Param } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from "@nestjs/swagger";
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Body,
+  Param,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from "@nestjs/common";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiConsumes,
+  ApiBody,
+} from "@nestjs/swagger";
 import { EventoApplication } from "../../application/applications/evento.Application";
 import { CreateEventoRequestDto } from "../dto/request/eventos/createEventoRequestDto";
 import { EventoResponseDto } from "../dto/response/eventoResponse.dto";
 import { UpdateImagemMesDto } from "../dto/request/eventos/updateImagemMesDto";
 import { Mes } from "@prisma/client";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+import { extname } from "path";
+import { memoryStorage } from "multer";
+import sharp from "sharp";
+import * as fs from "fs";
+import * as path from "path";
 
 @ApiTags("Eventos e Calendário")
 @Controller("eventos")
@@ -36,17 +60,42 @@ export class EventoController {
 
   // ROTA ESPECIAL: Atualizar a imagem de um mês
   @Put("capa-mensal/:mes")
-  @ApiOperation({ summary: "Define ou atualiza a imagem de capa de um mês" })
-  @ApiParam({
-    name: "mes",
-    enum: Mes,
-    description: "Ex: JANEIRO, FEVEREIRO...",
-  })
-  @ApiResponse({ status: 200, description: "Capa atualizada com sucesso" })
+  @ApiOperation({ summary: "Faz upload e comprime a imagem da capa do mês" })
+  @ApiParam({ name: "mes", enum: Mes })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({ type: UpdateImagemMesDto })
+  @UseInterceptors(
+    FileInterceptor("file", {
+      storage: memoryStorage(),
+    }),
+  )
   async atualizarCapa(
     @Param("mes") mes: Mes,
-    @Body() dto: UpdateImagemMesDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<void> {
-    return this.eventoApplication.atualizarCapaDoMes(mes, dto);
+    if (!file) {
+      throw new BadRequestException("Nenhum ficheiro enviado.");
+    }
+
+    const uploadDir = "./uploads/eventos";
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const nomeFicheiro = `${mes}-${Date.now()}.webp`;
+    const caminhoFisico = path.join(uploadDir, nomeFicheiro);
+
+    try {
+      await sharp(file.buffer)
+        .resize(800)
+        .webp({ quality: 80 })
+        .toFile(caminhoFisico);
+    } catch (error) {
+      throw new BadRequestException("Erro ao processar e comprimir a imagem.");
+    }
+
+    const caminhoUrl = `/uploads/eventos/${nomeFicheiro}`;
+
+    return this.eventoApplication.atualizarCapaDoMes(mes, caminhoUrl);
   }
 }

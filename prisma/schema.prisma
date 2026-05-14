@@ -25,3 +25,30 @@ model User {
 
   @@map("usuarios") // Opcional: faz a tabela no MySQL se chamar "usuarios" em vez de "User"
 }
+
+enum TipoRoteiro {
+  A_PE
+  ESPORTE_E_AVENTURA
+  DE_PRAIAS
+  CULTURAL
+  RELIGIOSO
+  RURAL
+  ECOLOGICO
+}
+
+model Atividade {
+  id          String      @id @default(uuid())
+  titulo      String      
+  descricao   String      @db.Text 
+  local       String      
+  latitude    Float?      
+  longitude   Float?
+  imagemUrl   String?     
+  
+  roteiro     TipoRoteiro 
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("atividades")
+}

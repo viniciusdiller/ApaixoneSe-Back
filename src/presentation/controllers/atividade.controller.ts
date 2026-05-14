@@ -1,8 +1,19 @@
-import { Controller, Post, Get, Body, Param } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Delete,
+  Body,
+  Param,
+  HttpCode,
+  HttpStatus,
+} from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from "@nestjs/swagger";
 import { AtividadeApplication } from "../../application/applications/atividade.Application";
-import { CreateAtividadeRequestDto } from "../dto/request/atividades/createAtividadeRequestDto";
 import { AtividadeResponseDto } from "../dto/response/atividadeResponse.dto";
+import { CreateAtividadeRequestDto } from "../dto/request/atividades/createAtividadeRequestDto";
+import { UpdateAtividadeRequestDto } from "../dto/request/atividades/updateAtividadeRequestDto";
 import { TipoRoteiro } from "@prisma/client";
 
 @ApiTags("Atividades e Roteiros")
@@ -52,5 +63,25 @@ export class AtividadeController {
   @ApiResponse({ status: 404, description: "Atividade não encontrada" })
   async findById(@Param("id") id: string): Promise<AtividadeResponseDto> {
     return this.atividadeApplication.findById(id);
+  }
+
+  @Put(":id")
+  @ApiOperation({ summary: "Atualiza os dados de uma atividade pelo ID" })
+  @ApiResponse({ status: 200, type: AtividadeResponseDto })
+  @ApiResponse({ status: 404, description: "Atividade não encontrada" })
+  async update(
+    @Param("id") id: string,
+    @Body() dto: UpdateAtividadeRequestDto,
+  ): Promise<AtividadeResponseDto> {
+    return this.atividadeApplication.update(id, dto);
+  }
+
+  @Delete(":id")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: "Deleta uma atividade pelo ID" })
+  @ApiResponse({ status: 204, description: "Atividade deletada com sucesso" })
+  @ApiResponse({ status: 404, description: "Atividade não encontrada" })
+  async delete(@Param("id") id: string): Promise<void> {
+    return this.atividadeApplication.delete(id);
   }
 }

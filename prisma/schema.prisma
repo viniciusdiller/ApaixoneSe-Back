@@ -23,7 +23,7 @@ model User {
   perfil    Perfil   @default(USUARIO)
   createdAt DateTime @default(now())      // O banco preenche a data sozinho
 
-  @@map("usuarios") // Opcional: faz a tabela no MySQL se chamar "usuarios" em vez de "User"
+  @@map("usuarios")
 }
 
 enum TipoRoteiro {
@@ -50,4 +50,39 @@ model Atividade {
   updatedAt   DateTime    @updatedAt
 
   @@map("atividades")
+}
+
+enum Mes {
+  JANEIRO
+  FEVEREIRO
+  MARCO
+  ABRIL
+  MAIO
+  JUNHO
+  JULHO
+  AGOSTO
+  SETEMBRO
+  OUTUBRO
+  NOVEMBRO
+  DEZEMBRO
+}
+
+model Eventos {
+  id          String      @id@default(uuid())
+  titulo      String
+  descricao   String      @db.Text
+  data        DateTime
+  local       String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("eventos") 
+}
+
+model ImagemMes {
+  mes       Mes      @id 
+  imagemUrl String
+  updatedAt DateTime @updatedAt
+
+  @@map("imagens_mes")
 }

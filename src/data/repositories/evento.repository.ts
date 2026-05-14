@@ -52,6 +52,25 @@ export class EventoRepository implements IEventoRepository {
     );
   }
 
+  async update(id: string, data: Partial<Evento>): Promise<Evento> {
+    const eventoAtualizado = await this.prisma.eventos.update({
+      where: { id },
+      data: {
+        titulo: data.titulo,
+        descricao: data.descricao,
+        data: data.data,
+        local: data.local,
+      },
+    });
+
+    return new Evento(
+      eventoAtualizado,
+      eventoAtualizado.id,
+      eventoAtualizado.createdAt,
+      eventoAtualizado.updatedAt,
+    );
+  }
+
   async delete(id: string): Promise<void> {
     await this.prisma.eventos.delete({
       where: { id },

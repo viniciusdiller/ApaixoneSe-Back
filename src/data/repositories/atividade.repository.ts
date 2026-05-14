@@ -66,6 +66,27 @@ export class AtividadeRepository implements IAtividadeRepository {
     );
   }
 
+  async update(id: string, data: Partial<Atividade>): Promise<Atividade> {
+    const atividadeAtualizada = await this.prisma.atividade.update({
+      where: { id },
+      data: {
+        titulo: data.titulo,
+        descricao: data.descricao,
+        local: data.local,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        roteiro: data.roteiro,
+      },
+    });
+
+    return new Atividade(
+      atividadeAtualizada,
+      atividadeAtualizada.id,
+      atividadeAtualizada.createdAt,
+      atividadeAtualizada.updatedAt,
+    );
+  }
+
   async delete(id: string): Promise<void> {
     await this.prisma.atividade.delete({
       where: { id },

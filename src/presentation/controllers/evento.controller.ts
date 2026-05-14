@@ -24,6 +24,7 @@ import { EventoApplication } from "../../application/applications/evento.Applica
 import { CreateEventoRequestDto } from "../dto/request/eventos/createEventoRequestDto";
 import { EventoResponseDto } from "../dto/response/eventoResponse.dto";
 import { UpdateImagemMesDto } from "../dto/request/eventos/updateImagemMesDto";
+import { UpdateEventoRequestDto } from "../dto/request/eventos/updateEventoRequestDto";
 import { Mes } from "@prisma/client";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { diskStorage } from "multer";
@@ -59,6 +60,17 @@ export class EventoController {
   @ApiResponse({ status: 200, type: EventoResponseDto })
   async findById(@Param("id") id: string): Promise<EventoResponseDto> {
     return this.eventoApplication.findById(id);
+  }
+
+  @Put(":id")
+  @ApiOperation({ summary: "Atualiza os dados de um evento pelo ID" })
+  @ApiResponse({ status: 200, type: EventoResponseDto })
+  @ApiResponse({ status: 404, description: "Evento não encontrado" })
+  async update(
+    @Param("id") id: string,
+    @Body() dto: UpdateEventoRequestDto,
+  ): Promise<EventoResponseDto> {
+    return this.eventoApplication.update(id, dto);
   }
 
   @Delete(":id")

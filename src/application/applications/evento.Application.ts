@@ -4,6 +4,7 @@ import { Evento } from "../../data/entities/evento.Entity";
 import { CreateEventoRequestDto } from "../../presentation/dto/request/eventos/createEventoRequestDto";
 import { EventoResponseDto } from "../../presentation/dto/response/eventoResponse.dto";
 import { UpdateImagemMesDto } from "../../presentation/dto/request/eventos/updateImagemMesDto";
+import { UpdateEventoRequestDto } from "../../presentation/dto/request/eventos/updateEventoRequestDto";
 import { Mes } from "@prisma/client";
 
 @Injectable()
@@ -62,6 +63,31 @@ export class EventoApplication {
     if (!evento) throw new NotFoundException("Evento não encontrado.");
 
     return this.mapToResponseDto(evento);
+  }
+
+  async update(
+    id: string,
+    dto: UpdateEventoRequestDto,
+  ): Promise<EventoResponseDto> {
+    const evento = await this.eventoRepository.findById(id);
+    if (!evento) {
+      throw new NotFoundException("Evento não encontrado para atualização.");
+    }
+
+    // Preparamos o objeto de atualização (se vier a data como string, convertemos para Date)
+    const dadosAtualizacao: Partial<Evento> = {
+      titulo: dto.titulo,
+      descricao: dto.descricao,
+      local: dto.local,
+      data: dto.data ? new Date(dto.data) : undefined,
+    };
+
+    const eventoAtualizado = await this.eventoRepository.update(
+      id,
+      dadosAtualizacao,
+    );
+
+    return this.mapToResponseDto(eventoAtualizado);
   }
 
   async delete(id: string): Promise<void> {

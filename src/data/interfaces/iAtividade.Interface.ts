@@ -14,5 +14,7 @@ export interface IAtividadeRepository {
   // Busca os detalhes de apenas uma atividade clicada
   findById(id: string): Promise<Atividade | null>;
 
+  update(id: string, data: Partial<Atividade>): Promise<Atividade>;
+
   delete(id: string): Promise<void>;
 }

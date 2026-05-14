@@ -27,8 +27,6 @@ import { UpdateImagemMesDto } from "../dto/request/eventos/updateImagemMesDto";
 import { UpdateEventoRequestDto } from "../dto/request/eventos/updateEventoRequestDto";
 import { Mes } from "@prisma/client";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { diskStorage } from "multer";
-import { extname } from "path";
 import { memoryStorage } from "multer";
 import sharp from "sharp";
 import * as fs from "fs";
@@ -105,7 +103,7 @@ export class EventoController {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
-    const nomeFicheiro = `${mes}-${Date.now()}.webp`;
+    const nomeFicheiro = `${mes}.webp`;
     const caminhoFisico = path.join(uploadDir, nomeFicheiro);
 
     try {
@@ -116,7 +114,6 @@ export class EventoController {
     } catch (error) {
       throw new BadRequestException("Erro ao processar e comprimir a imagem.");
     }
-
     const caminhoUrl = `/uploads/eventos/${nomeFicheiro}`;
 
     return this.eventoApplication.atualizarCapaDoMes(mes, caminhoUrl);

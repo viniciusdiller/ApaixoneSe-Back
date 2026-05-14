@@ -52,11 +52,6 @@ export class CreateAtividadeRequestDto {
   @IsOptional()
   longitude?: number;
 
-  @ApiProperty({ example: "https://site.com/foto-surfe.jpg", required: false })
-  @IsString()
-  @IsOptional()
-  imagemUrl?: string;
-
   // Aqui usamos o nosso ENUM oficial do banco de dados!
   @ApiProperty({ enum: TipoRoteiro, example: TipoRoteiro.ESPORTE_E_AVENTURA })
   @IsEnum(TipoRoteiro, {

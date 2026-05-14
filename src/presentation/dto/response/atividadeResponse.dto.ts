@@ -20,9 +20,6 @@ export class AtividadeResponseDto {
   @ApiProperty({ example: -42.5097, required: false })
   longitude?: number | null;
 
-  @ApiProperty({ example: "https://site.com/foto-surfe.jpg", required: false })
-  imagemUrl?: string | null;
-
   @ApiProperty({ enum: TipoRoteiro, example: "ESPORTE_E_AVENTURA" })
   roteiro!: TipoRoteiro;
 

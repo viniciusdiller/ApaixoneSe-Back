@@ -17,7 +17,6 @@ export class AtividadeRepository implements IAtividadeRepository {
         local: atividade.local,
         latitude: atividade.latitude,
         longitude: atividade.longitude,
-        imagemUrl: atividade.imagemUrl,
         roteiro: atividade.roteiro,
       },
     });

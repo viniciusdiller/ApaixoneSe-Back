@@ -42,8 +42,7 @@ model Atividade {
   descricao   String      @db.Text 
   local       String      
   latitude    Float?      
-  longitude   Float?
-  imagemUrl   String?     
+  longitude   Float? 
   
   roteiro     TipoRoteiro 
 

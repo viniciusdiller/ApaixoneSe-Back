@@ -18,7 +18,6 @@ export class AtividadeApplication {
       local: data.local,
       latitude: data.latitude,
       longitude: data.longitude,
-      imagemUrl: data.imagemUrl,
       roteiro: data.roteiro,
     });
 
@@ -59,7 +58,6 @@ export class AtividadeApplication {
       local: atividade.local,
       latitude: atividade.latitude ?? null,
       longitude: atividade.longitude ?? null,
-      imagemUrl: atividade.imagemUrl ?? null,
       roteiro: atividade.roteiro,
       createdAt: atividade.createdAt!,
     };

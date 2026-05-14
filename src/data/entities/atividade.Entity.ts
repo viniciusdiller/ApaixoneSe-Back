@@ -8,7 +8,7 @@ export class Atividade {
   public local: string;
   public latitude?: number | null; // Float no Prisma vira number no TS
   public longitude?: number | null;
-  public imagemUrl?: string | null;
+
   public roteiro: TipoRoteiro; // O nosso Enum (ex: ESPORTE_E_AVENTURA)
   public createdAt?: Date;
   public updatedAt?: Date;
@@ -24,7 +24,7 @@ export class Atividade {
     this.local = props.local;
     this.latitude = props.latitude;
     this.longitude = props.longitude;
-    this.imagemUrl = props.imagemUrl;
+
     this.roteiro = props.roteiro;
 
     this.id = id;

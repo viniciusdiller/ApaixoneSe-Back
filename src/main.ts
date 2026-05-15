@@ -9,10 +9,20 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Ativa o CORS (como você tinha no app.ts)
-  app.enableCors();
+  app.enableCors({
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+  });
 
   // Ativa a validação automática dos DTOs em toda a aplicação
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   // Isto permite que a pasta física 'uploads' seja acessível pelo navegador
   app.useStaticAssets(join(__dirname, "..", "uploads"), {

@@ -143,6 +143,12 @@ export class UserApplication {
     const user = await this.userRepository.findById(id);
     if (!user) throw new NotFoundException("Usuário não encontrado.");
 
+    // Se o usuário estiver enviando uma senha nova para atualizar, ela DEVE ser criptografada
+    if (data.senha) {
+      const salt = await bcrypt.genSalt(10);
+      data.senha = await bcrypt.hash(data.senha, salt);
+    }
+
     const atualizado = await this.userRepository.update(id, data);
     return this.mapToResponseDto(atualizado);
   }

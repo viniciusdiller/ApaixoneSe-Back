@@ -27,6 +27,7 @@ import * as path from "path";
 import { GastronomiaApplication } from "../../application/applications/gastronomia.Application";
 import { CreateGastronomiaRequestDto } from "../dto/request/gastronomia/createGastronomiaRequestDto";
 import { UpdateGastronomiaRequestDto } from "../dto/request/gastronomia/updateGastronomiaRequestDto";
+import { GastronomiaResponseDto } from "../dto/response/gastronomiaResponse.dto";
 
 // FUNÇÃO AUXILIAR: Transforma "Restaurante do João!" em "restaurante_do_joao"
 function sanitizarNomePasta(nome: string): string {
@@ -49,6 +50,7 @@ export class GastronomiaController {
   @ApiOperation({
     summary: "Registar novo estabelecimento (cria pasta própria)",
   })
+  @ApiResponse({ status: 201, type: GastronomiaResponseDto })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateGastronomiaRequestDto })
   @UseInterceptors(
@@ -109,6 +111,7 @@ export class GastronomiaController {
   // ==========================================
   @Get()
   @ApiOperation({ summary: "Lista todos os estabelecimentos" })
+  @ApiResponse({ status: 200, type: [GastronomiaResponseDto] })
   async findAll() {
     return this.app.findAll();
   }

@@ -11,6 +11,8 @@ import {
   BadRequestException,
   HttpCode,
   HttpStatus,
+  Req,
+  UseGuards,
 } from "@nestjs/common";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import {
@@ -19,7 +21,9 @@ import {
   ApiConsumes,
   ApiBody,
   ApiResponse,
+  ApiBearerAuth,
 } from "@nestjs/swagger";
+import { JwtAuthGuard } from "../guards/jwt-autg.guard";
 import { memoryStorage } from "multer";
 import sharp from "sharp";
 import * as fs from "fs";
@@ -47,10 +51,9 @@ export class GastronomiaController {
   // 1. CREATE (POST)
   // ==========================================
   @Post()
-  @ApiOperation({
-    summary: "Registar novo estabelecimento (cria pasta própria)",
-  })
-  @ApiResponse({ status: 201, type: GastronomiaResponseDto })
+  @UseGuards(JwtAuthGuard) // 🔒 Agora é obrigatório estar logado para criar
+  @ApiOperation({ summary: "Registar novo estabelecimento" })
+  @ApiBearerAuth() // Adiciona o cadeado no Swagger
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateGastronomiaRequestDto })
   @UseInterceptors(
@@ -64,12 +67,14 @@ export class GastronomiaController {
   )
   async create(
     @Body() dto: CreateGastronomiaRequestDto,
+    @Req() req: any, // 🕵️ Apanha o usuário logado do Token
     @UploadedFiles()
     files?: {
       logo?: Express.Multer.File[];
       documentoPdf?: Express.Multer.File[];
     },
   ) {
+    const usuarioLogado = req.user;
     // 1. EXTRAÇÃO DIRETA: Tentamos pegar logo o ficheiro na posição [0]
     const logoFile = files?.logo?.[0];
     const pdfFile = files?.documentoPdf?.[0];
@@ -103,7 +108,7 @@ export class GastronomiaController {
     const logoUrl = `/uploads/gastronomia/${nomePastaLimpo}/${logoNome}`;
     const pdfUrl = `/uploads/gastronomia/${nomePastaLimpo}/${pdfNome}`;
 
-    return this.app.create(dto, logoUrl, pdfUrl);
+    return this.app.create(dto, usuarioLogado.id, logoUrl, pdfUrl);
   }
 
   // ==========================================
@@ -143,12 +148,15 @@ export class GastronomiaController {
   async update(
     @Param("id") id: string,
     @Body() dto: UpdateGastronomiaRequestDto,
+    @Req() req: any,
     @UploadedFiles()
     files?: {
       logo?: Express.Multer.File[];
       documentoPdf?: Express.Multer.File[];
     },
   ) {
+    const usuarioLogado = req.user;
+
     const existente = await this.app.findById(id);
     const nomePastaLimpo = sanitizarNomePasta(dto.nome || existente.nome);
     const uploadDir = `./uploads/gastronomia/${nomePastaLimpo}`;
@@ -181,7 +189,7 @@ export class GastronomiaController {
       pdfUrl = `/uploads/gastronomia/${nomePastaLimpo}/${pdfNome}`;
     }
 
-    return this.app.update(id, dto, logoUrl, pdfUrl);
+    return this.app.update(id, dto, usuarioLogado, logoUrl, pdfUrl);
   }
 
   // ==========================================
@@ -189,9 +197,11 @@ export class GastronomiaController {
   // ==========================================
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: "Deleta um estabelecimento" })
   @ApiResponse({ status: 204, description: "Deletado com sucesso" })
-  async delete(@Param("id") id: string) {
-    return this.app.delete(id);
+  async delete(@Param("id") id: string, @Req() req: any) {
+    const usuarioLogado = req.user;
+    return this.app.delete(id, usuarioLogado);
   }
 }

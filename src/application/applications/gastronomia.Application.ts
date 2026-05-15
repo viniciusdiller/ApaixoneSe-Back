@@ -1,8 +1,13 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from "@nestjs/common";
 import { GastronomiaRepository } from "../../data/repositories/gastronomia.repository";
 import { Gastronomia } from "../../data/entities/gastronomia.Entity";
 import { GastronomiaResponseDto } from "../../presentation/dto/response/gastronomiaResponse.dto";
 import { StatusEstabelecimento } from "@prisma/client";
+import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -10,8 +15,19 @@ import * as path from "path";
 export class GastronomiaApplication {
   constructor(private readonly repo: GastronomiaRepository) {}
 
-  async create(data: any, logoUrl: string, pdfUrl: string) {
-    const nova = new Gastronomia({ ...data, logoUrl, documentoPdfUrl: pdfUrl });
+  async create(
+    data: any,
+    usuarioId: string,
+    logoUrl: string,
+    pdfUrl: string,
+  ): Promise<GastronomiaResponseDto> {
+    const nova = new Gastronomia({
+      ...data,
+      usuarioId,
+      logoUrl,
+      documentoPdfUrl: pdfUrl,
+    });
+
     const salva = await this.repo.save(nova);
     return this.mapToResponseDto(salva);
   }
@@ -28,10 +44,24 @@ export class GastronomiaApplication {
     return this.mapToResponseDto(g);
   }
 
-  async update(id: string, data: any, logoUrl?: string, pdfUrl?: string) {
+  async update(
+    id: string,
+    data: any,
+    usuarioLogado: IUsuarioLogado,
+    logoUrl?: string,
+    pdfUrl?: string,
+  ) {
     const existente = await this.repo.findById(id);
     if (!existente)
       throw new NotFoundException("Estabelecimento não encontrado.");
+    if (
+      usuarioLogado.perfil !== "ADMIN" &&
+      existente.usuarioId !== usuarioLogado.id
+    ) {
+      throw new ForbiddenException(
+        "Não tem permissão para alterar este estabelecimento.",
+      );
+    }
 
     if (data.status === StatusEstabelecimento.REJEITADO) {
       await this.repo.delete(id);
@@ -56,10 +86,18 @@ export class GastronomiaApplication {
     return this.mapToResponseDto(atualizado);
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, usuarioLogado: IUsuarioLogado): Promise<void> {
     const existente = await this.repo.findById(id);
     if (!existente)
       throw new NotFoundException("Estabelecimento não encontrado.");
+    if (
+      usuarioLogado.perfil !== "ADMIN" &&
+      existente.usuarioId !== usuarioLogado.id
+    ) {
+      throw new ForbiddenException(
+        "Não tem permissão para apagar este estabelecimento.",
+      );
+    }
 
     await this.repo.delete(id);
 

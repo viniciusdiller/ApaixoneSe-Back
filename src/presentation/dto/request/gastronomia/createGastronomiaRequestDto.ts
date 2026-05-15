@@ -42,14 +42,6 @@ export class CreateGastronomiaRequestDto {
   @IsNotEmpty()
   responsavelCpf!: string;
 
-  @ApiProperty({
-    example: "635b1aac-cb78-4c6c-9b9b-824512047256",
-    description: "ID do usuário criador",
-  })
-  @IsString()
-  @IsNotEmpty()
-  usuarioId!: string;
-
   // Os Ficheiros:
   @ApiProperty({
     type: "string",

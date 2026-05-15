@@ -1,9 +1,27 @@
-import { Body, Controller, Post, HttpCode, HttpStatus } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import {
+  Body,
+  Controller,
+  Post,
+  HttpCode,
+  HttpStatus,
+  Get,
+  Put,
+  Delete,
+  Param,
+  UseGuards,
+  Req,
+} from "@nestjs/common";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
+import { JwtAuthGuard } from "../guards/jwt-autg.guard";
 import { UserApplication } from "../../application/applications/user.Application";
 import { CreateUserRequestDto } from "../dto/request/users/createUserRequestDto";
-import { LoginRequestDto } from "../dto/request/loginRequestDto";
 import { UserResponseDto } from "../dto/response/userResponse.dto";
+import { LoginRequestDto } from "../dto/request/loginRequestDto";
 import { LoginResponseDto } from "../dto/response/loginResponse.dto";
 
 @ApiTags("Autenticação e Usuários") // O nome da aba lá no Swagger
@@ -30,6 +48,38 @@ export class UserController {
   ): Promise<UserResponseDto> {
     // O @Body() já garante que o JSON que chegou passou pelo DTO e é válido!
     return this.userApplication.create(createUserDto);
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Lista todos os usuários (Apenas Admin)" })
+  async findAll(@Req() req: any) {
+    return this.userApplication.findAll(req.user);
+  }
+
+  @Get(":id")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Busca um usuário por ID (Dono ou Admin)" })
+  async findById(@Param("id") id: string, @Req() req: any) {
+    return this.userApplication.findById(id, req.user);
+  }
+
+  @Put(":id")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Atualiza um usuário (Dono ou Admin)" })
+  async update(@Param("id") id: string, @Body() dto: any, @Req() req: any) {
+    return this.userApplication.update(id, dto, req.user);
+  }
+
+  @Delete(":id")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Exclui um usuário (Dono ou Admin)" })
+  async delete(@Param("id") id: string, @Req() req: any) {
+    return this.userApplication.delete(id, req.user);
   }
 
   // ---------------------------------------------------------

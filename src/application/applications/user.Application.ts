@@ -3,14 +3,17 @@ import {
   BadRequestException,
   UnauthorizedException,
   InternalServerErrorException,
+  NotFoundException,
+  ForbiddenException,
 } from "@nestjs/common";
 import * as bcrypt from "bcryptjs";
 import * as jwt from "jsonwebtoken";
 import { UserRepository } from "../../data/repositories/user.repository";
 import { User, PerfilUsuario } from "../../data/entities/user.Entity";
+import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
 import { CreateUserRequestDto } from "../../presentation/dto/request/users/createUserRequestDto";
-import { LoginRequestDto } from "../../presentation/dto/request/loginRequestDto";
 import { UserResponseDto } from "../../presentation/dto/response/userResponse.dto";
+import { LoginRequestDto } from "../../presentation/dto/request/loginRequestDto";
 import { LoginResponseDto } from "../../presentation/dto/response/loginResponse.dto";
 
 @Injectable()
@@ -103,17 +106,73 @@ export class UserApplication {
     };
   }
 
-  // ==========================================
-  // FUNÇÃO AUXILIAR (MAPPER)
-  // ==========================================
-  private mapToResponseDto(user: User): UserResponseDto {
+  async findAll(usuarioLogado: IUsuarioLogado): Promise<UserResponseDto[]> {
+    if (usuarioLogado.perfil !== "ADMIN") {
+      throw new ForbiddenException(
+        "Apenas administradores podem listar todos os usuários.",
+      );
+    }
+    const users = await this.userRepository.findAll();
+    return users.map((user) => this.mapToResponseDto(user));
+  }
+
+  async findById(
+    id: string,
+    usuarioLogado: IUsuarioLogado,
+  ): Promise<UserResponseDto> {
+    // Regra: Próprio usuário ou ADMIN
+    if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id) {
+      throw new ForbiddenException(
+        "Você não tem permissão para ver detalhes de outro usuário.",
+      );
+    }
+
+    const user = await this.userRepository.findById(id);
+    if (!user) throw new NotFoundException("Usuário não encontrado.");
+    return this.mapToResponseDto(user);
+  }
+
+  // 🔒 OWNERSHIP OU ADMIN
+  async update(id: string, data: any, usuarioLogado: IUsuarioLogado) {
+    if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id) {
+      throw new ForbiddenException(
+        "Você só pode alterar o seu próprio perfil.",
+      );
+    }
+
+    const user = await this.userRepository.findById(id);
+    if (!user) throw new NotFoundException("Usuário não encontrado.");
+
+    // Se o usuário estiver enviando uma senha nova para atualizar, ela DEVE ser criptografada
+    if (data.senha) {
+      const salt = await bcrypt.genSalt(10);
+      data.senha = await bcrypt.hash(data.senha, salt);
+    }
+
+    const atualizado = await this.userRepository.update(id, data);
+    return this.mapToResponseDto(atualizado);
+  }
+
+  // 🔒 OWNERSHIP OU ADMIN
+  async delete(id: string, usuarioLogado: IUsuarioLogado): Promise<void> {
+    if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id) {
+      throw new ForbiddenException("Você só pode excluir a sua própria conta.");
+    }
+
+    const user = await this.userRepository.findById(id);
+    if (!user) throw new NotFoundException("Usuário não encontrado.");
+
+    await this.userRepository.delete(id);
+  }
+
+  private mapToResponseDto(user: any): UserResponseDto {
     return {
-      id: user.id!,
+      id: user.id,
       nome: user.nome,
       usuario: user.usuario,
       email: user.email,
       perfil: user.perfil,
-      createdAt: user.createdAt!,
+      createdAt: user.createdAt,
     };
   }
 }

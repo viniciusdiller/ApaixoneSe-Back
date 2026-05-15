@@ -4,16 +4,20 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { GastronomiaRepository } from "../../data/repositories/gastronomia.repository";
+import { UserRepository } from "../../data/repositories/user.repository"; // Importação necessária para promoção
 import { Gastronomia } from "../../data/entities/gastronomia.Entity";
 import { GastronomiaResponseDto } from "../../presentation/dto/response/gastronomiaResponse.dto";
-import { StatusEstabelecimento } from "@prisma/client";
+import { StatusEstabelecimento, Perfil } from "@prisma/client"; // Importado Perfil para a lógica
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
 import * as fs from "fs";
 import * as path from "path";
 
 @Injectable()
 export class GastronomiaApplication {
-  constructor(private readonly repo: GastronomiaRepository) {}
+  constructor(
+    private readonly repo: GastronomiaRepository,
+    private readonly userRepo: UserRepository, // Injeção do repositório de usuários
+  ) {}
 
   async create(
     data: any,
@@ -34,7 +38,6 @@ export class GastronomiaApplication {
 
   async findAll() {
     const lista = await this.repo.findAll();
-
     return lista.map((g) => this.mapToResponseDto(g));
   }
 
@@ -54,6 +57,8 @@ export class GastronomiaApplication {
     const existente = await this.repo.findById(id);
     if (!existente)
       throw new NotFoundException("Estabelecimento não encontrado.");
+
+    // 1. Verificação de Propriedade: Dono ou ADMIN
     if (
       usuarioLogado.perfil !== "ADMIN" &&
       existente.usuarioId !== usuarioLogado.id
@@ -63,6 +68,18 @@ export class GastronomiaApplication {
       );
     }
 
+    // Só barramos se o usuário estiver TENTANDO MUDAR o status (valor diferente do DB).
+    if (
+      data.status &&
+      data.status !== existente.status &&
+      usuarioLogado.perfil !== "ADMIN"
+    ) {
+      throw new ForbiddenException(
+        "Apenas administradores podem alterar o status de um estabelecimento.",
+      );
+    }
+
+    // 3. Lógica de Rejeição (Só Admin chegará aqui com status alterado para REJEITADO)
     if (data.status === StatusEstabelecimento.REJEITADO) {
       await this.repo.delete(id);
       if (existente.logoUrl) {
@@ -75,6 +92,18 @@ export class GastronomiaApplication {
         message:
           "Estabelecimento rejeitado. Todos os dados e documentos foram apagados com sucesso.",
       };
+    }
+
+    // 4. Lógica de Promoção (Só Admin chegará aqui com status alterado para APROVADO)
+    if (
+      data.status === StatusEstabelecimento.APROVADO &&
+      existente.status !== StatusEstabelecimento.APROVADO
+    ) {
+      const dono = await this.userRepo.findById(existente.usuarioId);
+      // Se o dono ainda for um usuário comum, ele vira PARCEIRO
+      if (dono && dono.perfil === Perfil.USUARIO) {
+        await this.userRepo.update(dono.id!, { perfil: Perfil.PARCEIRO });
+      }
     }
 
     const dadosAtualizacao: Partial<Gastronomia> = { ...data };
@@ -90,6 +119,7 @@ export class GastronomiaApplication {
     const existente = await this.repo.findById(id);
     if (!existente)
       throw new NotFoundException("Estabelecimento não encontrado.");
+
     if (
       usuarioLogado.perfil !== "ADMIN" &&
       existente.usuarioId !== usuarioLogado.id

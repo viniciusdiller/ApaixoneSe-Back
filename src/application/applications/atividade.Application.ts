@@ -1,18 +1,29 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from "@nestjs/common";
 import { Atividade } from "../../data/entities/atividade.Entity";
 import { AtividadeRepository } from "../../data/repositories/atividade.repository";
 import { AtividadeResponseDto } from "../../presentation/dto/response/atividadeResponse.dto";
 import { CreateAtividadeRequestDto } from "../../presentation/dto/request/atividades/createAtividadeRequestDto";
 import { UpdateAtividadeRequestDto } from "../../presentation/dto/request/atividades/updateAtividadeRequestDto";
 import { TipoRoteiro } from "@prisma/client";
+import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
 
 @Injectable()
 export class AtividadeApplication {
-  // Recebemos o nosso Repository (Fase 1) por Injeção de Dependência
   constructor(private readonly atividadeRepository: AtividadeRepository) {}
 
-  // 1. REGISTAR NOVA ATIVIDADE
-  async create(data: CreateAtividadeRequestDto): Promise<AtividadeResponseDto> {
+  async create(
+    data: CreateAtividadeRequestDto,
+    usuarioLogado: IUsuarioLogado,
+  ): Promise<AtividadeResponseDto> {
+    if (usuarioLogado.perfil !== "ADMIN")
+      throw new ForbiddenException(
+        "Apenas administradores podem criar atividades.",
+      );
+
     const novaAtividade = new Atividade({
       titulo: data.titulo,
       descricao: data.descricao,
@@ -26,31 +37,52 @@ export class AtividadeApplication {
     return this.mapToResponseDto(atividadeSalva);
   }
 
-  // 2. BUSCAR TODAS
   async findAll(): Promise<AtividadeResponseDto[]> {
     const atividades = await this.atividadeRepository.findAll();
-    return atividades.map((a) => this.mapToResponseDto(a)); // Converte todas para DTO
+    return atividades.map((a) => this.mapToResponseDto(a));
   }
 
-  // 3. BUSCAR POR ROTEIRO (O Filtro do App)
   async findByRoteiro(roteiro: TipoRoteiro): Promise<AtividadeResponseDto[]> {
     const atividades = await this.atividadeRepository.findByRoteiro(roteiro);
     return atividades.map((a) => this.mapToResponseDto(a));
   }
 
-  // 4. DETALHES DE UMA ATIVIDADE
   async findById(id: string): Promise<AtividadeResponseDto> {
     const atividade = await this.atividadeRepository.findById(id);
-
-    // Tratamento de Erro do NestJS (Devolve 404 Not Found automático)
-    if (!atividade) {
-      throw new NotFoundException("Atividade não encontrada.");
-    }
-
+    if (!atividade) throw new NotFoundException("Atividade não encontrada.");
     return this.mapToResponseDto(atividade);
   }
 
-  // FUNÇÃO AUXILIAR: Mapeia de Entity para o formato da Internet (DTO)
+  async update(
+    id: string,
+    dto: UpdateAtividadeRequestDto,
+    usuarioLogado: IUsuarioLogado,
+  ): Promise<AtividadeResponseDto> {
+    if (usuarioLogado.perfil !== "ADMIN")
+      throw new ForbiddenException(
+        "Apenas administradores podem alterar atividades.",
+      );
+
+    const atividade = await this.atividadeRepository.findById(id);
+    if (!atividade)
+      throw new NotFoundException("Atividade não encontrada para atualização.");
+
+    const atividadeAtualizada = await this.atividadeRepository.update(id, dto);
+    return this.mapToResponseDto(atividadeAtualizada);
+  }
+
+  async delete(id: string, usuarioLogado: IUsuarioLogado): Promise<void> {
+    if (usuarioLogado.perfil !== "ADMIN")
+      throw new ForbiddenException(
+        "Apenas administradores podem excluir atividades.",
+      );
+
+    const atividade = await this.atividadeRepository.findById(id);
+    if (!atividade) throw new NotFoundException("Atividade não encontrada.");
+
+    await this.atividadeRepository.delete(id);
+  }
+
   private mapToResponseDto(atividade: Atividade): AtividadeResponseDto {
     return {
       id: atividade.id!,
@@ -62,28 +94,5 @@ export class AtividadeApplication {
       roteiro: atividade.roteiro,
       createdAt: atividade.createdAt!,
     };
-  }
-
-  async update(
-    id: string,
-    dto: UpdateAtividadeRequestDto,
-  ): Promise<AtividadeResponseDto> {
-    const atividade = await this.atividadeRepository.findById(id);
-    if (!atividade) {
-      throw new NotFoundException("Atividade não encontrada para atualização.");
-    }
-
-    const atividadeAtualizada = await this.atividadeRepository.update(id, dto);
-
-    return this.mapToResponseDto(atividadeAtualizada);
-  }
-
-  async delete(id: string): Promise<void> {
-    const atividade = await this.atividadeRepository.findById(id);
-
-    if (!atividade) {
-      throw new NotFoundException("Atividade não encontrada.");
-    }
-    await this.atividadeRepository.delete(id);
   }
 }

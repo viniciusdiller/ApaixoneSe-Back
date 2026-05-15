@@ -81,13 +81,6 @@ model Eventos {
   @@map("eventos") 
 }
 
-model ImagemMes {
-  mes       Mes      @id 
-  imagemUrl String
-  updatedAt DateTime @updatedAt
-
-  @@map("imagens_mes")
-}
 
 
 // 1. O Enum para controle de qualidade manual

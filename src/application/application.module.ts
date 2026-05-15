@@ -5,7 +5,7 @@ import { UserRepository } from "../data/repositories/user.repository";
 import { AtividadeApplication } from "./applications/atividade.Application";
 import { EventoApplication } from "./applications/evento.Application";
 import { GastronomiaApplication } from "./applications/gastronomia.Application";
-import { JwtStrategy } from "../application/strategies/jsw.strategy";
+import { JwtStrategy } from "./strategies/jwt.strategy";
 
 @Module({
   imports: [DataModule], // Precisa do banco de dados

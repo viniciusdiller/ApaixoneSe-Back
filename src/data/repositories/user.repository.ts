@@ -5,8 +5,22 @@ import { User, PerfilUsuario } from "../entities/user.Entity";
 
 @Injectable()
 export class UserRepository implements IUserRepository {
-  // Injeção de Dependência Mágica do NestJS
   constructor(private readonly prisma: PrismaService) {}
+
+  async findAll(): Promise<User[]> {
+    const usersPrisma = await this.prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+
+    return usersPrisma.map(
+      (u) =>
+        new User(
+          { ...u, perfil: u.perfil as PerfilUsuario },
+          u.id,
+          u.createdAt,
+        ),
+    );
+  }
 
   async findById(id: string): Promise<User | null> {
     const userPrisma = await this.prisma.user.findUnique({ where: { id } });
@@ -55,5 +69,30 @@ export class UserRepository implements IUserRepository {
       novoUserPrisma.id,
       novoUserPrisma.createdAt,
     );
+  }
+
+  async update(id: string, data: Partial<User>): Promise<User> {
+    const userAtualizado = await this.prisma.user.update({
+      where: { id },
+      data: {
+        nome: data.nome,
+        usuario: data.usuario,
+        email: data.email,
+        senha: data.senha,
+        perfil: data.perfil,
+      },
+    });
+
+    return new User(
+      { ...userAtualizado, perfil: userAtualizado.perfil as PerfilUsuario },
+      userAtualizado.id,
+      userAtualizado.createdAt,
+    );
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.user.delete({
+      where: { id },
+    });
   }
 }

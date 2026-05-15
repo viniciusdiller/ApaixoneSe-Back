@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "../data/data.module";
 import { UserApplication } from "./applications/user.Application";
+import { UserRepository } from "../data/repositories/user.repository";
 import { AtividadeApplication } from "./applications/atividade.Application";
 import { EventoApplication } from "./applications/evento.Application";
 import { GastronomiaApplication } from "./applications/gastronomia.Application";
@@ -13,6 +14,7 @@ import { JwtStrategy } from "../application/strategies/jsw.strategy";
     AtividadeApplication,
     EventoApplication,
     GastronomiaApplication,
+    UserRepository,
     JwtStrategy,
   ],
   exports: [

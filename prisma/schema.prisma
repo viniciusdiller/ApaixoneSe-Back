@@ -23,6 +23,8 @@ model User {
   perfil    Perfil   @default(USUARIO)
   createdAt DateTime @default(now())      // O banco preenche a data sozinho
 
+  gastronomias Gastronomia[]
+
   @@map("usuarios")
 }
 
@@ -85,4 +87,45 @@ model ImagemMes {
   updatedAt DateTime @updatedAt
 
   @@map("imagens_mes")
+}
+
+
+// 1. O Enum para controle de qualidade manual
+enum StatusEstabelecimento {
+  PENDENTE
+  APROVADO
+  REJEITADO
+}
+
+// 2. A Tabela de Gastronomia
+model Gastronomia {
+  id              String   @id @default(uuid())
+  nome            String
+  telefone        String
+  instagram       String?  // Opcional
+  endereco        String
+  especialidade   String?  // Ex: "Frutos do Mar", "Pizzaria"
+  
+  // Documentos
+  cnpj            String   @unique
+  responsavelNome String
+  responsavelCpf  String
+  
+  // Arquivos (Físicos no servidor)
+  documentoPdfUrl String   // Caminho do PDF salvo no servidor
+  logoUrl         String   // Caminho da imagem salva no servidor
+
+  // Controle de Qualidade
+  status          StatusEstabelecimento @default(PENDENTE)
+
+  // ==========================================
+  // RELACIONAMENTO: QUEM É O DONO? (OWNERSHIP)
+  // ==========================================
+  usuarioId       String
+  usuario         User  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("gastronomias")
 }

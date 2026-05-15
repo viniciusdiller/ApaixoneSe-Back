@@ -176,7 +176,7 @@ export class GastronomiaController {
     if (logoFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const logoNome = `logo_${Date.now()}.webp`;
+      const logoNome = `logo.webp`;
       await sharp(logoFile.buffer)
         .resize(500)
         .webp({ quality: 80 })
@@ -188,7 +188,7 @@ export class GastronomiaController {
     if (pdfFile) {
       if (!fs.existsSync(uploadDir))
         fs.mkdirSync(uploadDir, { recursive: true });
-      const pdfNome = `documento_${Date.now()}.pdf`;
+      const pdfNome = `documento.pdf`;
       fs.writeFileSync(path.join(uploadDir, pdfNome), pdfFile.buffer);
       pdfUrl = `/uploads/gastronomia/${nomePastaLimpo}/${pdfNome}`;
     }

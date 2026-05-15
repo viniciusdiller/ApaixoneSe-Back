@@ -131,6 +131,8 @@ export class GastronomiaController {
   // 3. UPDATE (PUT)
   // ==========================================
   @Put(":id")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: "Atualiza um estabelecimento (Ficheiros são opcionais)",
   })
@@ -147,7 +149,9 @@ export class GastronomiaController {
   )
   async update(
     @Param("id") id: string,
-    @Body() dto: UpdateGastronomiaRequestDto,
+
+    @Body()
+    dto: UpdateGastronomiaRequestDto,
     @Req() req: any,
     @UploadedFiles()
     files?: {
@@ -198,6 +202,7 @@ export class GastronomiaController {
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: "Deleta um estabelecimento" })
   @ApiResponse({ status: 204, description: "Deletado com sucesso" })
   async delete(@Param("id") id: string, @Req() req: any) {

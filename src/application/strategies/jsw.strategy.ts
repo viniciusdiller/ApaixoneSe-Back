@@ -18,14 +18,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   // Se a assinatura for válida, o NestJS chama esta função passando os dados que estavam lá dentro (payload)
   async validate(payload: any): Promise<IUsuarioLogado> {
-    if (!payload || !payload.sub) {
-      throw new UnauthorizedException("Token inválido.");
+    const usuarioId = payload.sub || payload.id;
+
+    // 2. Se não encontrarmos o ID, aí sim rejeitamos
+    if (!payload || !usuarioId) {
+      throw new UnauthorizedException(
+        "Token inválido. O ID do utilizador não foi encontrado dentro do Token.",
+      );
     }
 
-    // O retorno desta função é o que o NestJS vai injetar automaticamente no "req.user"!
+    // 3. Retornamos o utilizador para o NestJS injetar no req.user
     return {
-      id: payload.sub, // O padrão JWT usa 'sub' (subject) para guardar o ID
-      perfil: payload.perfil,
+      id: String(usuarioId),
+      perfil: payload.perfil || "USUARIO", // Se não vier perfil, assume USUARIO por segurança
     };
   }
 }

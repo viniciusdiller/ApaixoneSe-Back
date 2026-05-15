@@ -12,7 +12,4 @@ export interface IEventoRepository {
   update(id: string, data: Partial<Evento>): Promise<Evento>;
 
   delete(id: string): Promise<void>;
-  // Gestão da Imagem do Mês
-  upsertImagemMes(mes: Mes, url: string): Promise<void>;
-  getImagemMes(mes: Mes): Promise<string | null>;
 }

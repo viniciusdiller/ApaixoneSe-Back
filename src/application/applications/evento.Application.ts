@@ -106,29 +106,14 @@ export class EventoApplication {
     await this.eventoRepository.delete(id);
   }
 
-  async atualizarCapaDoMes(
-    mes: Mes,
-    imagemUrl: string,
-    usuarioLogado: IUsuarioLogado,
-  ): Promise<void> {
-    if (usuarioLogado.perfil !== "ADMIN")
-      throw new ForbiddenException(
-        "Apenas administradores podem alterar a capa do mês.",
-      );
-    await this.eventoRepository.upsertImagemMes(mes, imagemUrl);
-  }
-
-  private async mapToResponseDto(evento: Evento): Promise<EventoResponseDto> {
-    const mesEnum = this.getMesEnum(evento.data);
-    const imagemUrl = await this.eventoRepository.getImagemMes(mesEnum);
-
+  private mapToResponseDto(evento: Evento): EventoResponseDto {
     return {
       id: evento.id!,
       titulo: evento.titulo,
       descricao: evento.descricao,
       data: evento.data,
       local: evento.local,
-      imagemMesUrl: imagemUrl,
+      mes: this.getMesEnum(evento.data), // Injetamos o mês aqui
       createdAt: evento.createdAt!,
     };
   }

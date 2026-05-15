@@ -76,25 +76,4 @@ export class EventoRepository implements IEventoRepository {
       where: { id },
     });
   }
-
-  // ==========================================
-  // GESTÃO DA IMAGEM DO MÊS
-  // ==========================================
-
-  // O "upsert" é maravilhoso: Se a imagem do mês não existe, ele CRIA. Se já existe, ele ATUALIZA.
-  async upsertImagemMes(mes: Mes, url: string): Promise<void> {
-    await this.prisma.imagemMes.upsert({
-      where: { mes: mes },
-      update: { imagemUrl: url },
-      create: { mes: mes, imagemUrl: url },
-    });
-  }
-
-  // Busca a URL da imagem de um mês específico
-  async getImagemMes(mes: Mes): Promise<string | null> {
-    const imagemPrisma = await this.prisma.imagemMes.findUnique({
-      where: { mes },
-    });
-    return imagemPrisma ? imagemPrisma.imagemUrl : null;
-  }
 }

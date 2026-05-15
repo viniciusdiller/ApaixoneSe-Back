@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { Mes } from "@prisma/client";
 
 export class EventoResponseDto {
   @ApiProperty({ example: "uuid-1234-5678" })
@@ -16,13 +17,9 @@ export class EventoResponseDto {
   @ApiProperty({ example: "Parque de Exposições, Sampaio Corrêa" })
   local!: string;
 
-  // O pulo do gato: A imagem do mês já vai junto na resposta do evento!
-  @ApiProperty({
-    example: "https://site.com/foto-abril.jpg",
-    required: false,
-    nullable: true,
-  })
-  imagemMesUrl?: string | null;
+  // Novo campo: o Frontend usa isso para escolher a imagem
+  @ApiProperty({ enum: Mes, example: "ABRIL" })
+  mes!: Mes;
 
   @ApiProperty()
   createdAt!: Date;

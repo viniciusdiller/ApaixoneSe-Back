@@ -4,6 +4,8 @@ import { UserController } from "./controllers/user.controller";
 import { AtividadeController } from "./controllers/atividade.controller";
 import { EventoController } from "./controllers/evento.controller";
 import { GastronomiaController } from "./controllers/gastronomia.controller";
+import { HospedagemController } from "./controllers/hospedagem.controller";
+
 @Module({
   imports: [ApplicationModule], // Precisa da Ponte (Application)
   controllers: [
@@ -11,6 +13,7 @@ import { GastronomiaController } from "./controllers/gastronomia.controller";
     AtividadeController,
     EventoController,
     GastronomiaController,
+    HospedagemController,
   ], // Avisa que as rotas estão aqui
 })
 export class PresentationModule {}

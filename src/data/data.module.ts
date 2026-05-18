@@ -4,6 +4,7 @@ import { UserRepository } from "./repositories/user.repository";
 import { AtividadeRepository } from "./repositories/atividade.repository";
 import { EventoRepository } from "./repositories/evento.repository";
 import { GastronomiaRepository } from "./repositories/gastronomia.repository";
+import { HospedagemRepository } from "./repositories/hospedagem.repository";
 
 @Module({
   // Providers: O que este módulo sabe construir
@@ -13,6 +14,7 @@ import { GastronomiaRepository } from "./repositories/gastronomia.repository";
     AtividadeRepository,
     EventoRepository,
     GastronomiaRepository,
+    HospedagemRepository,
   ],
 
   // Exports: O que este módulo deixa os outros usarem
@@ -22,6 +24,7 @@ import { GastronomiaRepository } from "./repositories/gastronomia.repository";
     AtividadeRepository,
     EventoRepository,
     GastronomiaRepository,
+    HospedagemRepository,
   ],
 })
 export class DataModule {}

@@ -24,9 +24,12 @@ model User {
   createdAt DateTime @default(now())      // O banco preenche a data sozinho
 
   gastronomias Gastronomia[]
+  hospedagens  Hospedagem[]
 
   @@map("usuarios")
 }
+
+
 
 enum TipoRoteiro {
   A_PE
@@ -53,6 +56,8 @@ model Atividade {
 
   @@map("atividades")
 }
+
+
 
 enum Mes {
   JANEIRO
@@ -83,14 +88,12 @@ model Eventos {
 
 
 
-// 1. O Enum para controle de qualidade manual
 enum StatusEstabelecimento {
   PENDENTE
   APROVADO
   REJEITADO
 }
 
-// 2. A Tabela de Gastronomia
 model Gastronomia {
   id              String   @id @default(uuid())
   nome            String
@@ -121,4 +124,31 @@ model Gastronomia {
   updatedAt       DateTime @updatedAt
 
   @@map("gastronomias")
+}
+
+
+model Hospedagem {
+  id               String   @id @default(uuid())
+  nome             String
+  telefone         String
+  instagram        String?  
+  endereco         String
+  textoDiferencial String   @db.Text 
+  
+  cnpj             String   @unique
+  responsavelNome  String
+  responsavelCpf   String
+  
+  documentoPdfUrl  String   
+  logoUrl          String   
+
+  status           StatusEstabelecimento @default(PENDENTE)
+
+  usuarioId        String
+  usuario          User  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("hospedagens")
 }

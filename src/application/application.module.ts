@@ -7,6 +7,8 @@ import { EventoApplication } from "./applications/evento.Application";
 import { GastronomiaApplication } from "./applications/gastronomia.Application";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 
+import { HospedagemApplication } from "./applications/hospedagem.Application";
+
 @Module({
   imports: [DataModule], // Precisa do banco de dados
   providers: [
@@ -16,12 +18,14 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
     GastronomiaApplication,
     UserRepository,
     JwtStrategy,
+    HospedagemApplication,
   ],
   exports: [
     UserApplication,
     AtividadeApplication,
     EventoApplication,
     GastronomiaApplication,
+    HospedagemApplication,
   ], // Libera a ponte para o Controller usar
 })
 export class ApplicationModule {}

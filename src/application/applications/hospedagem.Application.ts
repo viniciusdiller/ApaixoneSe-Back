@@ -3,29 +3,24 @@ import {
   NotFoundException,
   ForbiddenException,
 } from "@nestjs/common";
-import { GastronomiaRepository } from "../../data/repositories/gastronomia.repository";
-import { UserRepository } from "../../data/repositories/user.repository"; // Importação necessária para promoção
-import { Gastronomia } from "../../data/entities/gastronomia.Entity";
-import { GastronomiaResponseDto } from "../../presentation/dto/response/gastronomiaResponse.dto";
-import { StatusEstabelecimento, Perfil } from "@prisma/client"; // Importado Perfil para a lógica
+import { HospedagemRepository } from "../../data/repositories/hospedagem.repository";
+import { UserRepository } from "../../data/repositories/user.repository";
+import { Hospedagem } from "../../data/entities/hospedagem.Entity";
+import { StatusEstabelecimento, Perfil } from "@prisma/client";
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
 import * as fs from "fs";
 import * as path from "path";
+import { HospedagemResponseDto } from "../../presentation/dto/response/hospedagemResponse.dto";
 
 @Injectable()
-export class GastronomiaApplication {
+export class HospedagemApplication {
   constructor(
-    private readonly repo: GastronomiaRepository,
-    private readonly userRepo: UserRepository, // Injeção do repositório de usuários
+    private readonly repo: HospedagemRepository,
+    private readonly userRepo: UserRepository,
   ) {}
 
-  async create(
-    data: any,
-    usuarioId: string,
-    logoUrl: string,
-    pdfUrl: string,
-  ): Promise<GastronomiaResponseDto> {
-    const nova = new Gastronomia({
+  async create(data: any, usuarioId: string, logoUrl: string, pdfUrl: string) {
+    const nova = new Hospedagem({
       ...data,
       usuarioId,
       logoUrl,
@@ -38,13 +33,13 @@ export class GastronomiaApplication {
 
   async findAll() {
     const lista = await this.repo.findAll();
-    return lista.map((g) => this.mapToResponseDto(g));
+    return lista.map((h) => this.mapToResponseDto(h));
   }
 
   async findById(id: string) {
-    const g = await this.repo.findById(id);
-    if (!g) throw new NotFoundException("Estabelecimento não encontrado.");
-    return this.mapToResponseDto(g);
+    const h = await this.repo.findById(id);
+    if (!h) throw new NotFoundException("Hospedagem não encontrada.");
+    return this.mapToResponseDto(h);
   }
 
   async update(
@@ -55,52 +50,42 @@ export class GastronomiaApplication {
     pdfUrl?: string,
   ) {
     const existente = await this.repo.findById(id);
-    if (!existente)
-      throw new NotFoundException("Estabelecimento não encontrado.");
+    if (!existente) throw new NotFoundException("Hospedagem não encontrada.");
 
-    // 1. Verificação de Propriedade: Dono ou ADMIN
     if (
       usuarioLogado.perfil !== "ADMIN" &&
       existente.usuarioId !== usuarioLogado.id
     ) {
       throw new ForbiddenException(
-        "Não tem permissão para alterar este estabelecimento.",
+        "Não tem permissão para alterar esta hospedagem.",
       );
     }
 
-    // Só barramos se o usuário estiver TENTANDO MUDAR o status (valor diferente do DB).
     if (
       data.status &&
       data.status !== existente.status &&
       usuarioLogado.perfil !== "ADMIN"
     ) {
       throw new ForbiddenException(
-        "Apenas administradores podem alterar o status de um estabelecimento.",
+        "Apenas administradores podem alterar o status.",
       );
     }
 
-    // 3. Lógica de Rejeição (Só Admin chegará aqui com status alterado para REJEITADO)
     if (data.status === StatusEstabelecimento.REJEITADO) {
       await this.repo.delete(id);
       if (existente.logoUrl) {
         const pastaFisica = path.join(".", path.dirname(existente.logoUrl));
-        if (fs.existsSync(pastaFisica)) {
+        if (fs.existsSync(pastaFisica))
           fs.rmSync(pastaFisica, { recursive: true, force: true });
-        }
       }
-      return {
-        message:
-          "Estabelecimento rejeitado. Todos os dados e documentos foram apagados com sucesso.",
-      };
+      return { message: "Hospedagem rejeitada e apagada." };
     }
 
-    // 4. Lógica de Promoção (Só Admin chegará aqui com status alterado para APROVADO)
     if (
       data.status === StatusEstabelecimento.APROVADO &&
       existente.status !== StatusEstabelecimento.APROVADO
     ) {
       const dono = await this.userRepo.findById(existente.usuarioId);
-      // Se o dono ainda for um usuário comum, ele vira PARCEIRO
       if (dono && dono.perfil === Perfil.USUARIO) {
         await this.userRepo.update(dono.id!, { perfil: Perfil.PARCEIRO });
       }
@@ -115,41 +100,41 @@ export class GastronomiaApplication {
     if (pdfUrl) dadosAtualizacao.documentoPdfUrl = pdfUrl;
 
     const atualizado = await this.repo.update(id, dadosAtualizacao);
+
+    // NOTA: Como você não criou o mapToResponseDto na hospedagem ainda, retornamos o objeto direto.
+    // Recomendo fazer o map para o HospedagemResponseDto aqui igual à Gastronomia!
     return this.mapToResponseDto(atualizado);
   }
 
-  async delete(id: string, usuarioLogado: IUsuarioLogado): Promise<void> {
+  async delete(id: string, usuarioLogado: IUsuarioLogado) {
     const existente = await this.repo.findById(id);
-    if (!existente)
-      throw new NotFoundException("Estabelecimento não encontrado.");
+    if (!existente) throw new NotFoundException("Hospedagem não encontrada.");
 
     if (
       usuarioLogado.perfil !== "ADMIN" &&
       existente.usuarioId !== usuarioLogado.id
     ) {
       throw new ForbiddenException(
-        "Não tem permissão para apagar este estabelecimento.",
+        "Não tem permissão para apagar esta hospedagem.",
       );
     }
 
     await this.repo.delete(id);
-
     if (existente.logoUrl) {
       const pastaFisica = path.join(".", path.dirname(existente.logoUrl));
-      if (fs.existsSync(pastaFisica)) {
+      if (fs.existsSync(pastaFisica))
         fs.rmSync(pastaFisica, { recursive: true, force: true });
-      }
     }
   }
 
-  private mapToResponseDto(g: Gastronomia): GastronomiaResponseDto {
+  private mapToResponseDto(g: Hospedagem): HospedagemResponseDto {
     return {
       id: g.id!,
       nome: g.nome,
       telefone: g.telefone,
       instagram: g.instagram,
       endereco: g.endereco,
-      especialidade: g.especialidade,
+      textoDiferencial: g.textoDiferencial,
       cnpj: g.cnpj,
       responsavelNome: g.responsavelNome,
       responsavelCpf: g.responsavelCpf,

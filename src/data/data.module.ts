@@ -7,6 +7,7 @@ import { GastronomiaRepository } from "./repositories/gastronomia.repository";
 import { HospedagemRepository } from "./repositories/hospedagem.repository";
 import { ServicoTuristaRepository } from "./repositories/servicoTurista.repository";
 import { CatRepository } from "./repositories/cat.repository";
+import { PlanoViagemRepository } from "./repositories/planoViagem.repository";
 
 @Module({
   // Providers: O que este módulo sabe construir
@@ -19,6 +20,7 @@ import { CatRepository } from "./repositories/cat.repository";
     HospedagemRepository,
     ServicoTuristaRepository,
     CatRepository,
+    PlanoViagemRepository,
   ],
 
   // Exports: O que este módulo deixa os outros usarem
@@ -31,6 +33,7 @@ import { CatRepository } from "./repositories/cat.repository";
     HospedagemRepository,
     ServicoTuristaRepository,
     CatRepository,
+    PlanoViagemRepository,
   ],
 })
 export class DataModule {}

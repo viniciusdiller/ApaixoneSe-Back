@@ -23,9 +23,10 @@ model User {
   perfil    Perfil   @default(USUARIO)
   createdAt DateTime @default(now())      // O banco preenche a data sozinho
 
-  gastronomias Gastronomia[]
-  hospedagens  Hospedagem[]
+  gastronomias    Gastronomia[]
+  hospedagens     Hospedagem[]
   servicosTurista ServicoTurista[]
+  planosViagem    PlanoViagem[]
 
   @@map("usuarios")
 }
@@ -55,6 +56,8 @@ model Atividade {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
+  itensPlanoViagem ItemPlanoViagem[]
+
   @@map("atividades")
 }
 
@@ -83,6 +86,8 @@ model Eventos {
   local       String
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
+
+  itensPlanoViagem ItemPlanoViagem[]
 
   @@map("eventos") 
 }
@@ -124,6 +129,8 @@ model Gastronomia {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  itensPlanoViagem ItemPlanoViagem[]
+
   @@map("gastronomias")
 }
 
@@ -149,6 +156,8 @@ model Hospedagem {
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  itensPlanoViagem ItemPlanoViagem[]
 
   @@map("hospedagens")
 }
@@ -184,6 +193,8 @@ model ServicoTurista {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
+  itensPlanoViagem ItemPlanoViagem[]
+
   @@map("servicos_turista")
 }
 
@@ -195,4 +206,58 @@ model Cat {
   updatedAt        DateTime @updatedAt
 
   @@map("cat")
+}
+
+
+model PlanoViagem {
+  id          String   @id @default(uuid())
+  titulo      String
+  dataInicio  DateTime
+  dataFim     DateTime
+  
+  // Quem é o dono deste roteiro?
+  usuarioId   String
+  usuario     User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  // As atividades do roteiro
+  itens       ItemPlanoViagem[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("planos_viagem")
+}
+
+model ItemPlanoViagem {
+  id               String   @id @default(uuid())
+  dataHoraAgendada DateTime
+  anotacao         String?  @db.Text // Ex: "Lembrar de levar toalha"
+
+  // A qual plano este item pertence?
+  planoViagemId    String
+  planoViagem      PlanoViagem @relation(fields: [planoViagemId], references: [id], onDelete: Cascade)
+
+  // ==========================================
+  // RELAÇÕES OPCIONAIS (Polimorfismo)
+  // O utilizador preencherá apenas UM destes IDs por cada item criado
+  // ==========================================
+  gastronomiaId    String?
+  gastronomia      Gastronomia? @relation(fields: [gastronomiaId], references: [id], onDelete: SetNull)
+
+  hospedagemId     String?
+  hospedagem       Hospedagem?  @relation(fields: [hospedagemId], references: [id], onDelete: SetNull)
+
+  eventoId         String?
+  evento           Eventos?     @relation(fields: [eventoId], references: [id], onDelete: SetNull)
+
+  atividadeId      String?
+  atividade        Atividade?  @relation(fields: [atividadeId], references: [id], onDelete: SetNull)
+
+  servicoTuristaId String?
+  servicoTurista   ServicoTurista? @relation(fields: [servicoTuristaId], references: [id], onDelete: SetNull)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("itens_plano_viagem")
 }

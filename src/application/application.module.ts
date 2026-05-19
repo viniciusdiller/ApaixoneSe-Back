@@ -5,6 +5,8 @@ import { UserRepository } from "../data/repositories/user.repository";
 import { AtividadeApplication } from "./applications/atividade.Application";
 import { EventoApplication } from "./applications/evento.Application";
 import { GastronomiaApplication } from "./applications/gastronomia.Application";
+import { ServicoTuristaApplication } from "./applications/servicoTurista.Application";
+import { CatApplication } from "./applications/cat.Application";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 
 import { HospedagemApplication } from "./applications/hospedagem.Application";
@@ -19,6 +21,8 @@ import { HospedagemApplication } from "./applications/hospedagem.Application";
     UserRepository,
     JwtStrategy,
     HospedagemApplication,
+    ServicoTuristaApplication,
+    CatApplication,
   ],
   exports: [
     UserApplication,
@@ -26,6 +30,8 @@ import { HospedagemApplication } from "./applications/hospedagem.Application";
     EventoApplication,
     GastronomiaApplication,
     HospedagemApplication,
+    ServicoTuristaApplication,
+    CatApplication,
   ], // Libera a ponte para o Controller usar
 })
 export class ApplicationModule {}

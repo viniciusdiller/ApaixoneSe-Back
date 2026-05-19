@@ -25,6 +25,7 @@ model User {
 
   gastronomias Gastronomia[]
   hospedagens  Hospedagem[]
+  servicosTurista ServicoTurista[]
 
   @@map("usuarios")
 }
@@ -126,7 +127,6 @@ model Gastronomia {
   @@map("gastronomias")
 }
 
-
 model Hospedagem {
   id               String   @id @default(uuid())
   nome             String
@@ -151,4 +151,48 @@ model Hospedagem {
   updatedAt        DateTime @updatedAt
 
   @@map("hospedagens")
+}
+
+
+enum TipoServicoTurista {
+  GUIA_TURISMO
+  AGENCIA_TURISMO
+  ESPORTE_LAZER
+  LOCADORA_VEICULOS
+}
+
+
+model ServicoTurista {
+  id               String             @id @default(uuid())
+  tipo             TipoServicoTurista
+  nome             String
+  telefone         String
+  instagram        String?
+  descricao        String?            @db.Text 
+  endereco         String?            
+  cnpj             String?
+  roteiro          TipoRoteiro?      
+  idiomas          String?            
+  logoUrl          String?   
+  fotoUrl          String?   
+  status           StatusEstabelecimento @default(PENDENTE)
+
+  // O Dono do Serviço
+  usuarioId        String
+  usuario          User  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("servicos_turista")
+}
+
+model Cat {
+  id               String   @id @default(uuid())
+  texto            String   @db.Text
+  arquivoUrl       String   // Ficheiro PDF ou Imagem
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@map("cat")
 }

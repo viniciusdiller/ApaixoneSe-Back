@@ -10,6 +10,7 @@ import { StatusEstabelecimento, Perfil } from "@prisma/client";
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
 import * as fs from "fs";
 import * as path from "path";
+import { HospedagemResponseDto } from "../../presentation/dto/response/hospedagemResponse.dto";
 
 @Injectable()
 export class HospedagemApplication {
@@ -25,18 +26,20 @@ export class HospedagemApplication {
       logoUrl,
       documentoPdfUrl: pdfUrl,
     });
+
     const salva = await this.repo.save(nova);
-    return salva; // Map para o DTO de Response depois
+    return this.mapToResponseDto(salva);
   }
 
   async findAll() {
-    return this.repo.findAll();
+    const lista = await this.repo.findAll();
+    return lista.map((h) => this.mapToResponseDto(h));
   }
 
   async findById(id: string) {
     const h = await this.repo.findById(id);
     if (!h) throw new NotFoundException("Hospedagem não encontrada.");
-    return h;
+    return this.mapToResponseDto(h);
   }
 
   async update(
@@ -88,11 +91,19 @@ export class HospedagemApplication {
       }
     }
 
-    const dadosAtualizacao: Partial<Hospedagem> = { ...data };
+    const dadosAtualizacao: any = { ...data };
+
+    delete dadosAtualizacao.logo;
+    delete dadosAtualizacao.documentoPdf;
+
     if (logoUrl) dadosAtualizacao.logoUrl = logoUrl;
     if (pdfUrl) dadosAtualizacao.documentoPdfUrl = pdfUrl;
 
-    return this.repo.update(id, dadosAtualizacao);
+    const atualizado = await this.repo.update(id, dadosAtualizacao);
+
+    // NOTA: Como você não criou o mapToResponseDto na hospedagem ainda, retornamos o objeto direto.
+    // Recomendo fazer o map para o HospedagemResponseDto aqui igual à Gastronomia!
+    return this.mapToResponseDto(atualizado);
   }
 
   async delete(id: string, usuarioLogado: IUsuarioLogado) {
@@ -114,5 +125,25 @@ export class HospedagemApplication {
       if (fs.existsSync(pastaFisica))
         fs.rmSync(pastaFisica, { recursive: true, force: true });
     }
+  }
+
+  private mapToResponseDto(g: Hospedagem): HospedagemResponseDto {
+    return {
+      id: g.id!,
+      nome: g.nome,
+      telefone: g.telefone,
+      instagram: g.instagram,
+      endereco: g.endereco,
+      textoDiferencial: g.textoDiferencial,
+      cnpj: g.cnpj,
+      responsavelNome: g.responsavelNome,
+      responsavelCpf: g.responsavelCpf,
+      documentoPdfUrl: g.documentoPdfUrl,
+      logoUrl: g.logoUrl,
+      status: g.status,
+      usuarioId: g.usuarioId,
+      createdAt: g.createdAt!,
+      updatedAt: g.updatedAt!,
+    };
   }
 }

@@ -106,12 +106,15 @@ export class GastronomiaApplication {
       }
     }
 
-    const dadosAtualizacao: Partial<Gastronomia> = { ...data };
+    const dadosAtualizacao: any = { ...data };
+
+    delete dadosAtualizacao.logo;
+    delete dadosAtualizacao.documentoPdf;
+
     if (logoUrl) dadosAtualizacao.logoUrl = logoUrl;
     if (pdfUrl) dadosAtualizacao.documentoPdfUrl = pdfUrl;
 
     const atualizado = await this.repo.update(id, dadosAtualizacao);
-
     return this.mapToResponseDto(atualizado);
   }
 

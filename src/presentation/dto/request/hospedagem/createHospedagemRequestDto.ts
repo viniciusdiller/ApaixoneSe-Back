@@ -9,6 +9,7 @@ export class CreateHospedagemRequestDto {
   @IsString()
   @IsNotEmpty()
   nome!: string;
+
   @ApiProperty({
     example: "(11) 99999-9999",
     description: "Telefone da hospedagem",
@@ -16,6 +17,7 @@ export class CreateHospedagemRequestDto {
   @IsString()
   @IsNotEmpty()
   telefone!: string;
+
   @ApiProperty({
     example: "@pousadaVivaMar",
     description: "Instagram da hospedagem",
@@ -23,6 +25,7 @@ export class CreateHospedagemRequestDto {
   @IsOptional()
   @IsString()
   instagram?: string;
+
   @ApiProperty({
     example: "Av. Brasil, 1000",
     description: "Endereço da hospedagem",
@@ -30,6 +33,7 @@ export class CreateHospedagemRequestDto {
   @IsString()
   @IsNotEmpty()
   endereco!: string;
+
   @ApiProperty({
     example: "A melhor pousada da cidade!",
     description: "Texto diferencial da hospedagem",
@@ -37,6 +41,7 @@ export class CreateHospedagemRequestDto {
   @IsString()
   @IsNotEmpty()
   textoDiferencial!: string;
+
   @ApiProperty({
     example: "12.345.678/0001-90",
     description: "CNPJ da hospedagem",
@@ -59,11 +64,17 @@ export class CreateHospedagemRequestDto {
   @IsString()
   @IsNotEmpty()
   responsavelCpf!: string;
+
   @ApiProperty({
+    type: "string",
+    format: "binary",
     example: "Logo da hospedagem",
   })
   logo!: any;
+
   @ApiProperty({
+    type: "string",
+    format: "binary",
     example: "Documento PDF da hospedagem",
   })
   documentoPdf!: any;

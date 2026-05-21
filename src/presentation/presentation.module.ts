@@ -6,6 +6,8 @@ import { EventoController } from "./controllers/evento.controller";
 import { GastronomiaController } from "./controllers/gastronomia.controller";
 import { HospedagemController } from "./controllers/hospedagem.controller";
 import { ServicoTuristaController } from "./controllers/servicoTurista.controller";
+import { PlanoViagemController } from "./controllers/planoViagem.controller";
+import { ItemPlanoViagemController } from "./controllers/itemPlanoViagem.controller";
 
 @Module({
   imports: [ApplicationModule], // Precisa da Ponte (Application)
@@ -16,6 +18,8 @@ import { ServicoTuristaController } from "./controllers/servicoTurista.controlle
     GastronomiaController,
     HospedagemController,
     ServicoTuristaController,
+    PlanoViagemController,
+    ItemPlanoViagemController,
   ], // Avisa que as rotas estão aqui
 })
 export class PresentationModule {}

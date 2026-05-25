@@ -3,10 +3,16 @@ import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { NestExpressApplication } from "@nestjs/platform-express";
+import { json, urlencoded } from "express";
 import { join } from "path";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Aumenta o limite do body para suportar imagens em base64 (data URLs)
+  // O padrão do Express é 100kb — insuficiente para imagens. 10mb cobre a maioria dos casos.
+  app.use(json({ limit: "10mb" }));
+  app.use(urlencoded({ limit: "10mb", extended: true }));
 
   // Ativa o CORS (como você tinha no app.ts)
   app.enableCors({

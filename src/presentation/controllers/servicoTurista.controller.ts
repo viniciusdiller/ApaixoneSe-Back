@@ -41,21 +41,6 @@ function sanitizarNomePasta(nome: string): string {
     .toLowerCase();
 }
 
-function obterNomeSubPasta(tipo: TipoServicoTurista): string {
-  switch (tipo) {
-    case TipoServicoTurista.GUIA_TURISMO:
-      return "Guias de Turismo";
-    case TipoServicoTurista.AGENCIA_TURISMO:
-      return "Agencias de Turismo";
-    case TipoServicoTurista.ESPORTE_LAZER:
-      return "Esporte e Lazer";
-    case TipoServicoTurista.LOCADORA_VEICULOS:
-      return "Locadora de Veiculos";
-    default:
-      return "Outros";
-  }
-}
-
 @ApiTags("Serviços para o Turista")
 @Controller("servico-turista")
 export class ServicoTuristaController {
@@ -101,10 +86,9 @@ export class ServicoTuristaController {
       );
     }
 
-    const subPasta = obterNomeSubPasta(dto.tipo);
+    // Usando o novo padrão de pastas simplificado
     const nomePastaLimpo = sanitizarNomePasta(dto.nome);
-
-    const uploadDir = `./uploads/Servico_Turista/${subPasta}/${nomePastaLimpo}`;
+    const uploadDir = `./uploads/servico_turista/${nomePastaLimpo}`;
 
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
@@ -116,7 +100,7 @@ export class ServicoTuristaController {
         .resize(500)
         .webp({ quality: 80 })
         .toFile(path.join(uploadDir, logoNome));
-      logoUrl = `/uploads/Servico_Turista/${subPasta}/${nomePastaLimpo}/${logoNome}`;
+      logoUrl = `/uploads/servico_turista/${nomePastaLimpo}/${logoNome}`;
     }
 
     if (fotoFile) {
@@ -125,7 +109,7 @@ export class ServicoTuristaController {
         .resize(500)
         .webp({ quality: 80 })
         .toFile(path.join(uploadDir, fotoNome));
-      fotoUrl = `/uploads/Servico_Turista/${subPasta}/${nomePastaLimpo}/${fotoNome}`;
+      fotoUrl = `/uploads/servico_turista/${nomePastaLimpo}/${fotoNome}`;
     }
 
     return this.app.create(dto, req.user.id, logoUrl, fotoUrl);
@@ -172,14 +156,10 @@ export class ServicoTuristaController {
     files?: { logo?: Express.Multer.File[]; foto?: Express.Multer.File[] },
   ) {
     const usuarioLogado = req.user;
-
-    // Precisamos do existente para saber qual é o tipo (Agência, Guia, etc.)
-    // e garantir que salvamos a imagem na subpasta correta
     const existente = await this.app.findById(id);
 
-    const subPasta = obterNomeSubPasta(existente.tipo);
     const nomePastaLimpo = sanitizarNomePasta(dto.nome || existente.nome);
-    const uploadDir = `./uploads/Servico_Turista/${subPasta}/${nomePastaLimpo}`;
+    const uploadDir = `./uploads/servico_turista/${nomePastaLimpo}`;
 
     let logoUrl: string | undefined;
     let fotoUrl: string | undefined;
@@ -195,7 +175,7 @@ export class ServicoTuristaController {
         .resize(500)
         .webp({ quality: 80 })
         .toFile(path.join(uploadDir, logoNome));
-      logoUrl = `/uploads/Servico_Turista/${subPasta}/${nomePastaLimpo}/${logoNome}`;
+      logoUrl = `/uploads/servico_turista/${nomePastaLimpo}/${logoNome}`;
     }
 
     if (fotoFile) {
@@ -206,7 +186,7 @@ export class ServicoTuristaController {
         .resize(500)
         .webp({ quality: 80 })
         .toFile(path.join(uploadDir, fotoNome));
-      fotoUrl = `/uploads/Servico_Turista/${subPasta}/${nomePastaLimpo}/${fotoNome}`;
+      fotoUrl = `/uploads/servico_turista/${nomePastaLimpo}/${fotoNome}`;
     }
 
     return this.app.update(id, dto, usuarioLogado, logoUrl, fotoUrl);

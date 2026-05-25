@@ -143,8 +143,7 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     const pastaFisica = path.join(
       ".",
       "uploads",
-      "Servico_Turista",
-      "Agencias de Turismo",
+      "servico_turista",
       "agencia_e2e",
     );
     if (fs.existsSync(pastaFisica))

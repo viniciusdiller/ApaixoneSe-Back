@@ -14,6 +14,7 @@ export class HospedagemRepository implements IHospedagemRepository {
         nome: hospedagem.nome,
         telefone: hospedagem.telefone,
         instagram: hospedagem.instagram,
+        site: hospedagem.site,
         endereco: hospedagem.endereco,
         textoDiferencial: hospedagem.textoDiferencial,
         cnpj: hospedagem.cnpj,

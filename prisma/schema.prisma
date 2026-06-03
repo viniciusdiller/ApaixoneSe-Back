@@ -138,7 +138,8 @@ model Hospedagem {
   id               String   @id @default(uuid())
   nome             String
   telefone         String
-  instagram        String?  
+  instagram        String?
+  site             String?  
   endereco         String
   textoDiferencial String   @db.Text 
   
@@ -177,6 +178,7 @@ model ServicoTurista {
   nome             String
   telefone         String
   instagram        String?
+  site             String?
   descricao        String?            @db.Text 
   endereco         String?            
   cnpj             String?

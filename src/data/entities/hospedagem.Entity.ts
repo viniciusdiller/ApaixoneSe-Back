@@ -5,6 +5,7 @@ export class Hospedagem {
   nome!: string;
   telefone!: string;
   instagram?: string | null;
+  site?: string | null;
   endereco!: string;
   textoDiferencial!: string;
   cnpj!: string;

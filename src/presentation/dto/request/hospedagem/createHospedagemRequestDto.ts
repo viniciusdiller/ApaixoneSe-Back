@@ -27,6 +27,15 @@ export class CreateHospedagemRequestDto {
   instagram?: string;
 
   @ApiProperty({
+    example: "https://www.meusite.com.br",
+    description: "Site oficial",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  site?: string;
+
+  @ApiProperty({
     example: "Av. Brasil, 1000",
     description: "Endereço da hospedagem",
   })

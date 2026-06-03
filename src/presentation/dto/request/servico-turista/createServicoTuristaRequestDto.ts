@@ -20,7 +20,20 @@ export class CreateServicoTuristaRequestDto {
   @IsOptional()
   @IsString()
   instagram?: string;
-  @ApiProperty({ required: false }) @IsOptional() @IsString() endereco?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  endereco?: string;
+
+  @ApiProperty({
+    example: "https://www.meusite.com.br",
+    description: "Site oficial",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  site?: string;
 
   // ==========================================
   // CAMPOS ESPECÍFICOS: AGÊNCIA E ESPORTE

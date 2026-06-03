@@ -14,6 +14,12 @@ export class HospedagemResponseDto {
   @ApiProperty({ example: "@pousadaVivaMar", required: false, nullable: true })
   instagram?: string | null;
 
+  @ApiProperty({
+    example: "https://viva-mar-pousada.vercel.app/#hero",
+    required: false,
+  })
+  site?: string | null;
+
   @ApiProperty({ example: "Rua Jaime Warde de Carvalho, 9, 2" })
   endereco!: string;
 

@@ -127,23 +127,24 @@ export class HospedagemApplication {
     }
   }
 
-  private mapToResponseDto(g: Hospedagem): HospedagemResponseDto {
+  private mapToResponseDto(h: Hospedagem): HospedagemResponseDto {
     return {
-      id: g.id!,
-      nome: g.nome,
-      telefone: g.telefone,
-      instagram: g.instagram,
-      endereco: g.endereco,
-      textoDiferencial: g.textoDiferencial,
-      cnpj: g.cnpj,
-      responsavelNome: g.responsavelNome,
-      responsavelCpf: g.responsavelCpf,
-      documentoPdfUrl: g.documentoPdfUrl,
-      logoUrl: g.logoUrl,
-      status: g.status,
-      usuarioId: g.usuarioId,
-      createdAt: g.createdAt!,
-      updatedAt: g.updatedAt!,
+      id: h.id!,
+      nome: h.nome,
+      telefone: h.telefone,
+      instagram: h.instagram,
+      site: h.site,
+      endereco: h.endereco,
+      textoDiferencial: h.textoDiferencial,
+      cnpj: h.cnpj,
+      responsavelNome: h.responsavelNome,
+      responsavelCpf: h.responsavelCpf,
+      documentoPdfUrl: h.documentoPdfUrl,
+      logoUrl: h.logoUrl,
+      status: h.status,
+      usuarioId: h.usuarioId,
+      createdAt: h.createdAt!,
+      updatedAt: h.updatedAt!,
     };
   }
 }

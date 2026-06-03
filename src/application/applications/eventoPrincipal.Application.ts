@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from "@nestjs/common";
 import { EventoPrincipalRepository } from "../../data/repositories/eventoPrincipal.repository";
 import { EventoPrincipal } from "../../data/entities/eventoPrincipal.Entity";
@@ -12,10 +13,18 @@ export class EventoPrincipalApplication {
   constructor(private readonly repo: EventoPrincipalRepository) {}
 
   async create(data: any, usuarioLogado: IUsuarioLogado) {
-    if (usuarioLogado.perfil !== "ADMIN")
+    if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
         "Apenas o Administrador pode criar o Evento Principal.",
       );
+    }
+    const eventosExistentes = await this.repo.findAll();
+    if (eventosExistentes.length > 0) {
+      throw new BadRequestException(
+        "Já existe um Evento Principal cadastrado. Por favor, edite o evento atual em vez de criar um novo.",
+      );
+    }
+
     const novo = new EventoPrincipal(data);
     return this.repo.save(novo);
   }
@@ -35,7 +44,7 @@ export class EventoPrincipalApplication {
       throw new ForbiddenException(
         "Apenas o Administrador pode editar o Evento Principal.",
       );
-    await this.findById(id); // Valida se existe
+    await this.findById(id);
     return this.repo.update(id, data);
   }
 

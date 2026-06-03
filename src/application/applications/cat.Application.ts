@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from "@nestjs/common";
 import { CatRepository } from "../../data/repositories/cat.repository";
 import { Cat } from "../../data/entities/cat.Entity";
@@ -17,6 +18,13 @@ export class CatApplication {
     if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
         "Apenas administradores podem criar informações do CAT.",
+      );
+    }
+
+    const catExistente = await this.repo.findAll();
+    if (catExistente.length > 0) {
+      throw new BadRequestException(
+        "Já existe uma informação do CAT cadastrada. Por favor, edite a informação atual em vez de criar uma nova.",
       );
     }
     const novo = new Cat({ ...data, arquivoUrl });

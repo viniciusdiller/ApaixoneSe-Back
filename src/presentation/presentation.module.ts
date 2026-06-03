@@ -9,6 +9,7 @@ import { ServicoTuristaController } from "./controllers/servicoTurista.controlle
 import { PlanoViagemController } from "./controllers/planoViagem.controller";
 import { ItemPlanoViagemController } from "./controllers/itemPlanoViagem.controller";
 import { CatController } from "./controllers/cat.controller";
+import { VisitaController } from "./controllers/visita.controller";
 
 @Module({
   imports: [ApplicationModule], // Precisa da Ponte (Application)
@@ -22,6 +23,7 @@ import { CatController } from "./controllers/cat.controller";
     PlanoViagemController,
     ItemPlanoViagemController,
     CatController,
+    VisitaController,
   ], // Avisa que as rotas estão aqui
 })
 export class PresentationModule {}

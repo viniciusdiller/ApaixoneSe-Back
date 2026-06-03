@@ -9,6 +9,7 @@ import { ServicoTuristaApplication } from "./applications/servicoTurista.Applica
 import { CatApplication } from "./applications/cat.Application";
 import { PlanoViagemApplication } from "./applications/planoViagem.Application";
 import { ItemPlanoViagemApplication } from "./applications/itemPlanoViagem.Application";
+import { VisitaApplication } from "./applications/visita.Application";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 
 import { HospedagemApplication } from "./applications/hospedagem.Application";
@@ -27,6 +28,7 @@ import { HospedagemApplication } from "./applications/hospedagem.Application";
     CatApplication,
     PlanoViagemApplication,
     ItemPlanoViagemApplication,
+    VisitaApplication,
   ],
   exports: [
     UserApplication,
@@ -38,6 +40,7 @@ import { HospedagemApplication } from "./applications/hospedagem.Application";
     CatApplication,
     PlanoViagemApplication,
     ItemPlanoViagemApplication,
+    VisitaApplication,
   ], // Libera a ponte para o Controller usar
 })
 export class ApplicationModule {}

@@ -27,6 +27,7 @@ model User {
   hospedagens     Hospedagem[]
   servicosTurista ServicoTurista[]
   planosViagem    PlanoViagem[]
+  visitas        Visita[]
 
   @@map("usuarios")
 }
@@ -57,10 +58,30 @@ model Atividade {
   updatedAt   DateTime    @updatedAt
 
   itensPlanoViagem ItemPlanoViagem[]
+  visitas        Visita[]
 
   @@map("atividades")
 }
 
+
+model Visita {
+  id             String       @id @default(uuid())
+  
+  // Quem visitou?
+  usuarioId      String
+  usuario        User         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  // O que foi visitado? (Pode ser uma Gastronomia OU uma Atividade)
+  gastronomiaId  String?
+  gastronomia    Gastronomia? @relation(fields: [gastronomiaId], references: [id], onDelete: Cascade)
+
+  atividadeId    String?
+  atividade      Atividade?   @relation(fields: [atividadeId], references: [id], onDelete: Cascade)
+
+  dataVisita     DateTime     @default(now())
+
+  @@map("visitas")
+}
 
 
 enum Mes {
@@ -130,6 +151,7 @@ model Gastronomia {
   updatedAt       DateTime @updatedAt
 
   itensPlanoViagem ItemPlanoViagem[]
+  visitas        Visita[]
 
   @@map("gastronomias")
 }

@@ -10,6 +10,7 @@ import { CatRepository } from "./repositories/cat.repository";
 import { PlanoViagemRepository } from "./repositories/planoViagem.repository";
 import { ItemPlanoViagemRepository } from "./repositories/itemPlanoViagem.repository";
 import { VisitaRepository } from "./repositories/visita.repository";
+import { EventoPrincipalRepository } from "./repositories/eventoPrincipal.repository";
 
 @Module({
   // Providers: O que este módulo sabe construir
@@ -25,6 +26,7 @@ import { VisitaRepository } from "./repositories/visita.repository";
     PlanoViagemRepository,
     ItemPlanoViagemRepository,
     VisitaRepository,
+    EventoPrincipalRepository,
   ],
 
   // Exports: O que este módulo deixa os outros usarem
@@ -40,6 +42,7 @@ import { VisitaRepository } from "./repositories/visita.repository";
     PlanoViagemRepository,
     ItemPlanoViagemRepository,
     VisitaRepository,
+    EventoPrincipalRepository,
   ],
 })
 export class DataModule {}

@@ -113,6 +113,17 @@ model Eventos {
   @@map("eventos") 
 }
 
+model EventoPrincipal {
+  id        String   @id @default(uuid())
+  titulo    String
+  etapa     String?  
+  data      DateTime 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("eventos_principais")
+}
+
 
 
 enum StatusEstabelecimento {

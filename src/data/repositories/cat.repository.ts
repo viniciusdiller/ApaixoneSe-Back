@@ -11,7 +11,8 @@ export class CatRepository implements ICatRepository {
     const criado = await this.prisma.cat.create({
       data: {
         texto: cat.texto,
-        arquivoUrl: cat.arquivoUrl,
+        imagensUrl: cat.imagensUrl,
+        videoUrl: cat.videoUrl,
       },
     });
     return new Cat(criado);

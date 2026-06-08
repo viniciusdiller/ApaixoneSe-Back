@@ -1,7 +1,8 @@
 export class Cat {
   id?: string;
   texto!: string;
-  arquivoUrl!: string;
+  imagensUrl?: string[] | any;
+  videoUrl?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 

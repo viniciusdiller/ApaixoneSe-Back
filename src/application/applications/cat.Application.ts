@@ -14,7 +14,12 @@ import * as path from "path";
 export class CatApplication {
   constructor(private readonly repo: CatRepository) {}
 
-  async create(data: any, usuarioLogado: IUsuarioLogado, arquivoUrl: string) {
+  async create(
+    data: any,
+    usuarioLogado: IUsuarioLogado,
+    imagensUrl?: string[],
+    videoUrl?: string,
+  ) {
     if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
         "Apenas administradores podem criar informações do CAT.",
@@ -27,7 +32,11 @@ export class CatApplication {
         "Já existe uma informação do CAT cadastrada. Por favor, edite a informação atual em vez de criar uma nova.",
       );
     }
-    const novo = new Cat({ ...data, arquivoUrl });
+    const dadosLimpos: any = { ...data };
+    delete dadosLimpos.imagens;
+    delete dadosLimpos.video;
+
+    const novo = new Cat({ ...dadosLimpos, imagensUrl, videoUrl });
     return this.repo.save(novo);
   }
 
@@ -45,7 +54,8 @@ export class CatApplication {
     id: string,
     data: any,
     usuarioLogado: IUsuarioLogado,
-    arquivoUrl?: string,
+    imagensUrl?: string[],
+    videoUrl?: string,
   ) {
     if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
@@ -58,13 +68,12 @@ export class CatApplication {
       throw new NotFoundException("Informação do CAT não encontrada.");
 
     const dadosAtualizacao: any = { ...data };
+    delete dadosAtualizacao.imagens;
+    delete dadosAtualizacao.video;
 
-    // Proteção contra o erro do Prisma
-    delete dadosAtualizacao.arquivo;
-
-    if (arquivoUrl) {
-      dadosAtualizacao.arquivoUrl = arquivoUrl;
-    }
+    if (imagensUrl && imagensUrl.length > 0)
+      dadosAtualizacao.imagensUrl = imagensUrl;
+    if (videoUrl) dadosAtualizacao.videoUrl = videoUrl;
 
     return this.repo.update(id, dadosAtualizacao);
   }
@@ -83,8 +92,8 @@ export class CatApplication {
     await this.repo.delete(id);
 
     // Apagar fisicamente a pasta e o arquivo
-    if (existente.arquivoUrl) {
-      const pastaFisica = path.join(".", path.dirname(existente.arquivoUrl));
+    if (existente.imagensUrl && existente.imagensUrl.length > 0) {
+      const pastaFisica = path.join(".", path.dirname(existente.imagensUrl[0]));
       if (fs.existsSync(pastaFisica)) {
         fs.rmSync(pastaFisica, { recursive: true, force: true });
       }

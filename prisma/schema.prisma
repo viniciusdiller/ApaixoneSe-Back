@@ -238,7 +238,8 @@ model ServicoTurista {
 model Cat {
   id               String   @id @default(uuid())
   texto            String   @db.Text
-  arquivoUrl       String   // Ficheiro PDF ou Imagem
+  imagensUrl Json?   
+  videoUrl   String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

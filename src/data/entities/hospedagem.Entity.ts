@@ -4,6 +4,7 @@ export class Hospedagem {
   id?: string;
   nome!: string;
   telefone!: string;
+  tags?: string[] | any;
   instagram?: string | null;
   site?: string | null;
   endereco!: string;

@@ -13,6 +13,7 @@ export class HospedagemRepository implements IHospedagemRepository {
       data: {
         nome: hospedagem.nome,
         telefone: hospedagem.telefone,
+        tags: hospedagem.tags,
         instagram: hospedagem.instagram,
         site: hospedagem.site,
         endereco: hospedagem.endereco,

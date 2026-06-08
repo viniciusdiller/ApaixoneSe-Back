@@ -171,6 +171,7 @@ model Hospedagem {
   id               String   @id @default(uuid())
   nome             String
   telefone         String
+  tags             Json?
   instagram        String?
   site             String?  
   endereco         String

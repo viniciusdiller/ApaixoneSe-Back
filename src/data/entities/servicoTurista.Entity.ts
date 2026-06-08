@@ -17,6 +17,7 @@ export class ServicoTurista {
   cnpj?: string | null;
   roteiro?: TipoRoteiro | null;
   idiomas?: string | null;
+  comprovanteUrl?: string | null;
   logoUrl?: string | null;
   fotoUrl?: string | null;
   status!: StatusEstabelecimento;

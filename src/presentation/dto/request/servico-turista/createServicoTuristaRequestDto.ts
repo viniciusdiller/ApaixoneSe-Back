@@ -92,6 +92,7 @@ export class CreateServicoTuristaRequestDto {
     required: false,
     description: "Obrigatório para Agências, Esportes e Locadoras",
   })
+  @IsOptional()
   logo?: any;
 
   @ApiProperty({
@@ -100,5 +101,16 @@ export class CreateServicoTuristaRequestDto {
     required: false,
     description: "Obrigatório apenas para Guias",
   })
+  @IsOptional()
   foto?: any;
+
+  @ApiProperty({
+    type: "string",
+    format: "binary",
+    description:
+      "Comprovante do Cadastur (Obrigatório exceto Esporte_Lazer. PDF ou Imagem)",
+    required: false,
+  })
+  @IsOptional()
+  comprovante?: any;
 }

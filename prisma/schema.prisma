@@ -217,7 +217,8 @@ model ServicoTurista {
   endereco         String?            
   cnpj             String?
   roteiro          TipoRoteiro?      
-  idiomas          String?            
+  idiomas          String?   
+  comprovanteUrl   String?         
   logoUrl          String?   
   fotoUrl          String?   
   status           StatusEstabelecimento @default(PENDENTE)

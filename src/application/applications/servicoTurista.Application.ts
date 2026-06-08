@@ -24,6 +24,9 @@ export class ServicoTuristaApplication {
     logoUrl?: string,
     fotoUrl?: string,
   ) {
+    if (data.validade) {
+      data.validade = new Date(data.validade);
+    }
     const novo = new ServicoTurista({ ...data, usuarioId, logoUrl, fotoUrl });
     return this.repo.save(novo);
   }
@@ -94,6 +97,13 @@ export class ServicoTuristaApplication {
     // LIMPEZA PARA EVITAR O ERRO DO PRISMA
     delete dadosAtualizacao.logo;
     delete dadosAtualizacao.foto;
+    if (dadosAtualizacao.validade && usuarioLogado.perfil !== "ADMIN") {
+      delete dadosAtualizacao.validade;
+    }
+
+    if (dadosAtualizacao.validade) {
+      dadosAtualizacao.validade = new Date(dadosAtualizacao.validade);
+    }
 
     if (logoUrl) dadosAtualizacao.logoUrl = logoUrl;
     if (fotoUrl) dadosAtualizacao.fotoUrl = fotoUrl;

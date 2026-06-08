@@ -11,6 +11,7 @@ export class ServicoTurista {
   telefone!: string;
   instagram?: string | null;
   site?: string | null;
+  validade?: Date | null;
   descricao?: string | null;
   endereco?: string | null;
   cnpj?: string | null;

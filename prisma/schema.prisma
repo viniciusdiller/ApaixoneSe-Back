@@ -212,6 +212,7 @@ model ServicoTurista {
   telefone         String
   instagram        String?
   site             String?
+  validade         DateTime?
   descricao        String?            @db.Text 
   endereco         String?            
   cnpj             String?

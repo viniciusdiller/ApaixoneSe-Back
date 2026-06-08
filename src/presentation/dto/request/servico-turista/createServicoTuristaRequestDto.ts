@@ -35,6 +35,15 @@ export class CreateServicoTuristaRequestDto {
   @IsString()
   site?: string;
 
+  @ApiProperty({
+    example: "2024-12-31",
+    description: "Data de validade do serviço (se aplicável)",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  validade?: string;
+
   // ==========================================
   // CAMPOS ESPECÍFICOS: AGÊNCIA E ESPORTE
   // ==========================================

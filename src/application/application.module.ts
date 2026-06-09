@@ -11,9 +11,9 @@ import { PlanoViagemApplication } from "./applications/planoViagem.Application";
 import { ItemPlanoViagemApplication } from "./applications/itemPlanoViagem.Application";
 import { VisitaApplication } from "./applications/visita.Application";
 import { EventoPrincipalApplication } from "./applications/eventoPrincipal.Application";
-import { JwtStrategy } from "./strategies/jwt.strategy";
-
+import { CasaDeCambioApplication } from "./applications/casaDeCambio.Application";
 import { HospedagemApplication } from "./applications/hospedagem.Application";
+import { JwtStrategy } from "./strategies/jwt.strategy";
 
 @Module({
   imports: [DataModule], // Precisa do banco de dados
@@ -31,6 +31,7 @@ import { HospedagemApplication } from "./applications/hospedagem.Application";
     ItemPlanoViagemApplication,
     VisitaApplication,
     EventoPrincipalApplication,
+    CasaDeCambioApplication,
   ],
   exports: [
     UserApplication,
@@ -44,6 +45,7 @@ import { HospedagemApplication } from "./applications/hospedagem.Application";
     ItemPlanoViagemApplication,
     VisitaApplication,
     EventoPrincipalApplication,
+    CasaDeCambioApplication,
   ], // Libera a ponte para o Controller usar
 })
 export class ApplicationModule {}

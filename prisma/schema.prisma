@@ -248,6 +248,16 @@ model Cat {
   @@map("cat")
 }
 
+model CasaDeCambio {
+  id        String @id @default(uuid())
+  nome      String
+  telefone  String
+  endereco  String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 
 model PlanoViagem {
   id          String   @id @default(uuid())

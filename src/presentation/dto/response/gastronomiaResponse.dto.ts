@@ -14,6 +14,9 @@ export class GastronomiaResponseDto {
   @ApiProperty({ example: "vineco", required: false, nullable: true })
   instagram?: string | null;
 
+  @ApiProperty({ example: "12-43-5122", required: false, nullable: true })
+  validade?: Date | null;
+
   @ApiProperty({ example: "Rua Jaime Warde de Carvalho, 9, 2" })
   endereco!: string;
 

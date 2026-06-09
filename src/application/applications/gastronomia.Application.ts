@@ -25,8 +25,19 @@ export class GastronomiaApplication {
     logoUrl: string,
     pdfUrl: string,
   ): Promise<GastronomiaResponseDto> {
+    const dadosCriacao: any = { ...data };
+
+    // Limpeza para evitar o erro de "Unknown argument" no Prisma
+    delete dadosCriacao.logo;
+    delete dadosCriacao.documentoPdf;
+
+    // 🛑 CONVERSÃO DA DATA
+    if (dadosCriacao.validade) {
+      dadosCriacao.validade = new Date(dadosCriacao.validade);
+    }
+
     const nova = new Gastronomia({
-      ...data,
+      ...dadosCriacao,
       usuarioId,
       logoUrl,
       documentoPdfUrl: pdfUrl,
@@ -111,6 +122,16 @@ export class GastronomiaApplication {
     delete dadosAtualizacao.logo;
     delete dadosAtualizacao.documentoPdf;
 
+    // 🛑 REGRA DE SEGURANÇA: Só o ADMIN pode alterar a validade
+    if (dadosAtualizacao.validade && usuarioLogado.perfil !== "ADMIN") {
+      delete dadosAtualizacao.validade;
+    }
+
+    // Se passou pela barreira e a validade existe, converte para Date
+    if (dadosAtualizacao.validade) {
+      dadosAtualizacao.validade = new Date(dadosAtualizacao.validade);
+    }
+
     if (logoUrl) dadosAtualizacao.logoUrl = logoUrl;
     if (pdfUrl) dadosAtualizacao.documentoPdfUrl = pdfUrl;
 
@@ -155,6 +176,7 @@ export class GastronomiaApplication {
       responsavelCpf: g.responsavelCpf,
       documentoPdfUrl: g.documentoPdfUrl,
       logoUrl: g.logoUrl,
+      validade: g.validade,
       status: g.status,
       usuarioId: g.usuarioId,
       createdAt: g.createdAt!,

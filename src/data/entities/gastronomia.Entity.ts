@@ -5,6 +5,7 @@ export class Gastronomia {
   public nome: string;
   public telefone: string;
   public instagram?: string | null;
+  public validade?: Date | null;
   public endereco: string;
   public especialidade?: string | null;
   public cnpj: string;
@@ -31,6 +32,7 @@ export class Gastronomia {
     this.nome = props.nome;
     this.telefone = props.telefone;
     this.instagram = props.instagram;
+    this.validade = props.validade;
     this.endereco = props.endereco;
     this.especialidade = props.especialidade;
     this.cnpj = props.cnpj;

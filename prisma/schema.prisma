@@ -137,6 +137,7 @@ model Gastronomia {
   nome            String
   telefone        String
   instagram       String?  // Opcional
+  validade         DateTime?
   endereco        String
   especialidade   String?  // Ex: "Frutos do Mar", "Pizzaria"
   

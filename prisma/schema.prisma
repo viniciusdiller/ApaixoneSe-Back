@@ -258,6 +258,45 @@ model CasaDeCambio {
   updatedAt DateTime @updatedAt
 }
 
+model SecretariaTurismo {
+  id               String                        @id @default(uuid())
+  textoExplicativo String                        @db.Text
+  videoUrl         String?
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+  
+  turistandos      SecretariaTurismoTuristando[]
+  projetos         SecretariaTurismoProjeto[]
+
+  @@map("secretaria_turismo")
+}
+
+model SecretariaTurismoTuristando {
+  id                  String            @id @default(uuid())
+  secretariaTurismoId String
+  secretariaTurismo   SecretariaTurismo @relation(fields: [secretariaTurismoId], references: [id], onDelete: Cascade)
+  titulo              String
+  texto               String            @db.Text
+  imagensUrl          Json?             // Array de caminhos das imagens
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@map("secretaria_turismo_turistando")
+}
+
+model SecretariaTurismoProjeto {
+  id                  String            @id @default(uuid())
+  secretariaTurismoId String
+  secretariaTurismo   SecretariaTurismo @relation(fields: [secretariaTurismoId], references: [id], onDelete: Cascade)
+  titulo              String
+  descricao           String            @db.Text
+  imagemUrl           String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@map("secretaria_turismo_projeto")
+}
+
 
 model PlanoViagem {
   id          String   @id @default(uuid())

@@ -12,6 +12,7 @@ import { ItemPlanoViagemRepository } from "./repositories/itemPlanoViagem.reposi
 import { VisitaRepository } from "./repositories/visita.repository";
 import { EventoPrincipalRepository } from "./repositories/eventoPrincipal.repository";
 import { CasaDeCambioRepository } from "./repositories/casaDeCambio.repository";
+import { SecretariaTurismoRepository } from "./repositories/secretariaTurismo.repository";
 
 @Module({
   // Providers: O que este módulo sabe construir
@@ -29,6 +30,7 @@ import { CasaDeCambioRepository } from "./repositories/casaDeCambio.repository";
     VisitaRepository,
     EventoPrincipalRepository,
     CasaDeCambioRepository,
+    SecretariaTurismoRepository,
   ],
 
   // Exports: O que este módulo deixa os outros usarem
@@ -46,6 +48,7 @@ import { CasaDeCambioRepository } from "./repositories/casaDeCambio.repository";
     VisitaRepository,
     EventoPrincipalRepository,
     CasaDeCambioRepository,
+    SecretariaTurismoRepository,
   ],
 })
 export class DataModule {}

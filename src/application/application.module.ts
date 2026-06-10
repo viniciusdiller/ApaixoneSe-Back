@@ -13,6 +13,7 @@ import { VisitaApplication } from "./applications/visita.Application";
 import { EventoPrincipalApplication } from "./applications/eventoPrincipal.Application";
 import { CasaDeCambioApplication } from "./applications/casaDeCambio.Application";
 import { HospedagemApplication } from "./applications/hospedagem.Application";
+import { SecretariaTurismoApplication } from "./applications/secretariaTurismo.Application";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 
 @Module({
@@ -32,6 +33,7 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
     VisitaApplication,
     EventoPrincipalApplication,
     CasaDeCambioApplication,
+    SecretariaTurismoApplication,
   ],
   exports: [
     UserApplication,
@@ -46,6 +48,7 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
     VisitaApplication,
     EventoPrincipalApplication,
     CasaDeCambioApplication,
+    SecretariaTurismoApplication,
   ], // Libera a ponte para o Controller usar
 })
 export class ApplicationModule {}

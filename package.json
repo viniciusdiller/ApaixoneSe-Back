@@ -5,6 +5,9 @@
   "main": "server.ts",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "build": "tsc --project tsconfig.json",
+    "start": "node dist/main.js",
+    "start:prod": "node dist/main.js",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "keywords": [],

@@ -1,5 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNotEmpty, IsOptional } from "class-validator";
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsDateString,
+} from "class-validator";
 
 export class CreateGastronomiaRequestDto {
   @ApiProperty({ example: "Vinecao Restaurante" })
@@ -16,6 +21,15 @@ export class CreateGastronomiaRequestDto {
   @IsString()
   @IsOptional()
   instagram?: string;
+
+  @ApiProperty({
+    example: "2027-12-31T23:59:59Z",
+    description: "Data de validade (Apenas Admin)",
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+  validade?: string;
 
   @ApiProperty({ example: "Rua Jaime Warde de Carvalho, 9, 2 - Saquarema" })
   @IsString()

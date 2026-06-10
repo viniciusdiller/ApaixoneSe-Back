@@ -9,9 +9,12 @@ import { ServicoTuristaApplication } from "./applications/servicoTurista.Applica
 import { CatApplication } from "./applications/cat.Application";
 import { PlanoViagemApplication } from "./applications/planoViagem.Application";
 import { ItemPlanoViagemApplication } from "./applications/itemPlanoViagem.Application";
-import { JwtStrategy } from "./strategies/jwt.strategy";
-
+import { VisitaApplication } from "./applications/visita.Application";
+import { EventoPrincipalApplication } from "./applications/eventoPrincipal.Application";
+import { CasaDeCambioApplication } from "./applications/casaDeCambio.Application";
 import { HospedagemApplication } from "./applications/hospedagem.Application";
+import { SecretariaTurismoApplication } from "./applications/secretariaTurismo.Application";
+import { JwtStrategy } from "./strategies/jwt.strategy";
 
 @Module({
   imports: [DataModule], // Precisa do banco de dados
@@ -27,6 +30,10 @@ import { HospedagemApplication } from "./applications/hospedagem.Application";
     CatApplication,
     PlanoViagemApplication,
     ItemPlanoViagemApplication,
+    VisitaApplication,
+    EventoPrincipalApplication,
+    CasaDeCambioApplication,
+    SecretariaTurismoApplication,
   ],
   exports: [
     UserApplication,
@@ -38,6 +45,10 @@ import { HospedagemApplication } from "./applications/hospedagem.Application";
     CatApplication,
     PlanoViagemApplication,
     ItemPlanoViagemApplication,
+    VisitaApplication,
+    EventoPrincipalApplication,
+    CasaDeCambioApplication,
+    SecretariaTurismoApplication,
   ], // Libera a ponte para o Controller usar
 })
 export class ApplicationModule {}

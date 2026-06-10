@@ -23,8 +23,26 @@ export class ServicoTuristaApplication {
     usuarioId: string,
     logoUrl?: string,
     fotoUrl?: string,
+    comprovanteUrl?: string,
   ) {
-    const novo = new ServicoTurista({ ...data, usuarioId, logoUrl, fotoUrl });
+    const dadosCriacao: any = { ...data };
+
+    delete dadosCriacao.logo;
+    delete dadosCriacao.foto;
+    delete dadosCriacao.comprovante;
+
+    if (dadosCriacao.validade) {
+      dadosCriacao.validade = new Date(dadosCriacao.validade);
+    }
+
+    const novo = new ServicoTurista({
+      ...dadosCriacao,
+      usuarioId,
+      logoUrl,
+      fotoUrl,
+      comprovanteUrl,
+    });
+
     return this.repo.save(novo);
   }
 
@@ -44,6 +62,7 @@ export class ServicoTuristaApplication {
     usuarioLogado: IUsuarioLogado,
     logoUrl?: string,
     fotoUrl?: string,
+    comprovanteUrl?: string,
   ) {
     const existente = await this.repo.findById(id);
     if (!existente) throw new NotFoundException("Serviço não encontrado.");
@@ -94,9 +113,18 @@ export class ServicoTuristaApplication {
     // LIMPEZA PARA EVITAR O ERRO DO PRISMA
     delete dadosAtualizacao.logo;
     delete dadosAtualizacao.foto;
+    delete dadosAtualizacao.comprovante;
+    if (dadosAtualizacao.validade && usuarioLogado.perfil !== "ADMIN") {
+      delete dadosAtualizacao.validade;
+    }
+
+    if (dadosAtualizacao.validade) {
+      dadosAtualizacao.validade = new Date(dadosAtualizacao.validade);
+    }
 
     if (logoUrl) dadosAtualizacao.logoUrl = logoUrl;
     if (fotoUrl) dadosAtualizacao.fotoUrl = fotoUrl;
+    if (comprovanteUrl) dadosAtualizacao.comprovanteUrl = comprovanteUrl;
 
     return this.repo.update(id, dadosAtualizacao);
   }

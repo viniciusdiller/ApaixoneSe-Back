@@ -27,6 +27,7 @@ model User {
   hospedagens     Hospedagem[]
   servicosTurista ServicoTurista[]
   planosViagem    PlanoViagem[]
+  visitas        Visita[]
 
   @@map("usuarios")
 }
@@ -57,10 +58,30 @@ model Atividade {
   updatedAt   DateTime    @updatedAt
 
   itensPlanoViagem ItemPlanoViagem[]
+  visitas        Visita[]
 
   @@map("atividades")
 }
 
+
+model Visita {
+  id             String       @id @default(uuid())
+  
+  // Quem visitou?
+  usuarioId      String
+  usuario        User         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  // O que foi visitado? (Pode ser uma Gastronomia OU uma Atividade)
+  gastronomiaId  String?
+  gastronomia    Gastronomia? @relation(fields: [gastronomiaId], references: [id], onDelete: Cascade)
+
+  atividadeId    String?
+  atividade      Atividade?   @relation(fields: [atividadeId], references: [id], onDelete: Cascade)
+
+  dataVisita     DateTime     @default(now())
+
+  @@map("visitas")
+}
 
 
 enum Mes {
@@ -92,6 +113,17 @@ model Eventos {
   @@map("eventos") 
 }
 
+model EventoPrincipal {
+  id        String   @id @default(uuid())
+  titulo    String
+  etapa     String?  
+  data      DateTime 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("eventos_principais")
+}
+
 
 
 enum StatusEstabelecimento {
@@ -105,6 +137,7 @@ model Gastronomia {
   nome            String
   telefone        String
   instagram       String?  // Opcional
+  validade         DateTime?
   endereco        String
   especialidade   String?  // Ex: "Frutos do Mar", "Pizzaria"
   
@@ -130,6 +163,7 @@ model Gastronomia {
   updatedAt       DateTime @updatedAt
 
   itensPlanoViagem ItemPlanoViagem[]
+  visitas        Visita[]
 
   @@map("gastronomias")
 }
@@ -138,7 +172,9 @@ model Hospedagem {
   id               String   @id @default(uuid())
   nome             String
   telefone         String
-  instagram        String?  
+  tags             Json?
+  instagram        String?
+  site             String?  
   endereco         String
   textoDiferencial String   @db.Text 
   
@@ -177,11 +213,14 @@ model ServicoTurista {
   nome             String
   telefone         String
   instagram        String?
+  site             String?
+  validade         DateTime?
   descricao        String?            @db.Text 
   endereco         String?            
   cnpj             String?
   roteiro          TipoRoteiro?      
-  idiomas          String?            
+  idiomas          String?   
+  comprovanteUrl   String?         
   logoUrl          String?   
   fotoUrl          String?   
   status           StatusEstabelecimento @default(PENDENTE)
@@ -201,11 +240,61 @@ model ServicoTurista {
 model Cat {
   id               String   @id @default(uuid())
   texto            String   @db.Text
-  arquivoUrl       String   // Ficheiro PDF ou Imagem
+  imagensUrl Json?   
+  videoUrl   String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   @@map("cat")
+}
+
+model CasaDeCambio {
+  id        String @id @default(uuid())
+  nome      String
+  telefone  String
+  endereco  String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SecretariaTurismo {
+  id               String                        @id @default(uuid())
+  textoExplicativo String                        @db.Text
+  videoUrl         String?
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+  
+  turistandos      SecretariaTurismoTuristando[]
+  projetos         SecretariaTurismoProjeto[]
+
+  @@map("secretaria_turismo")
+}
+
+model SecretariaTurismoTuristando {
+  id                  String            @id @default(uuid())
+  secretariaTurismoId String
+  secretariaTurismo   SecretariaTurismo @relation(fields: [secretariaTurismoId], references: [id], onDelete: Cascade)
+  titulo              String
+  texto               String            @db.Text
+  imagensUrl          Json?             // Array de caminhos das imagens
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@map("secretaria_turismo_turistando")
+}
+
+model SecretariaTurismoProjeto {
+  id                  String            @id @default(uuid())
+  secretariaTurismoId String
+  secretariaTurismo   SecretariaTurismo @relation(fields: [secretariaTurismoId], references: [id], onDelete: Cascade)
+  titulo              String
+  descricao           String            @db.Text
+  imagemUrl           String?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@map("secretaria_turismo_projeto")
 }
 
 

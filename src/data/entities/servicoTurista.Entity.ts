@@ -10,11 +10,14 @@ export class ServicoTurista {
   nome!: string;
   telefone!: string;
   instagram?: string | null;
+  site?: string | null;
+  validade?: Date | null;
   descricao?: string | null;
   endereco?: string | null;
   cnpj?: string | null;
   roteiro?: TipoRoteiro | null;
   idiomas?: string | null;
+  comprovanteUrl?: string | null;
   logoUrl?: string | null;
   fotoUrl?: string | null;
   status!: StatusEstabelecimento;

@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { StatusEstabelecimento } from "@prisma/client";
+import { IsOptional } from "class-validator";
 
 export class HospedagemResponseDto {
   @ApiProperty({ example: "5d6095ec-619f-493f-b458-714d8af67843" })
@@ -11,8 +12,19 @@ export class HospedagemResponseDto {
   @ApiProperty({ example: "2299938764" })
   telefone!: string;
 
+  @ApiProperty({
+    example: ["Wi-Fi", "Ar Condicionado", "Piscina"],
+  })
+  tags?: any;
+
   @ApiProperty({ example: "@pousadaVivaMar", required: false, nullable: true })
   instagram?: string | null;
+
+  @ApiProperty({
+    example: "https://viva-mar-pousada.vercel.app/#hero",
+    required: false,
+  })
+  site?: string | null;
 
   @ApiProperty({ example: "Rua Jaime Warde de Carvalho, 9, 2" })
   endereco!: string;

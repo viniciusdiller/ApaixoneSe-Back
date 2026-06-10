@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNotEmpty } from "class-validator";
+import { IsString, IsNotEmpty, IsOptional } from "class-validator";
 
 export class CreateCatRequestDto {
   @ApiProperty({ description: "Texto informativo do CAT" })
@@ -8,9 +8,20 @@ export class CreateCatRequestDto {
   texto!: string;
 
   @ApiProperty({
+    type: "array",
+    items: { type: "string", format: "binary" },
+    description: "Múltiplas imagens para a galeria do CAT",
+    required: false,
+  })
+  @IsOptional()
+  imagens?: any[];
+
+  @ApiProperty({
     type: "string",
     format: "binary",
-    description: "Mapa ou informativo",
+    description: "Vídeo do CAT (.mp4, .mov)",
+    required: false,
   })
-  arquivo!: any;
+  @IsOptional()
+  video?: any;
 }

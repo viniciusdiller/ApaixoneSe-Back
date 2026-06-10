@@ -19,12 +19,30 @@ export class CreateHospedagemRequestDto {
   telefone!: string;
 
   @ApiProperty({
+    description:
+      "Array de tags (ex: ['Wi-Fi', 'Piscina', 'Pet Friendly']). Se enviar via FormData, pode enviar como string JSON.",
+    required: false,
+    example: ["Wi-Fi", "Ar Condicionado", "Piscina"],
+  })
+  @IsOptional()
+  tags?: any;
+
+  @ApiProperty({
     example: "@pousadaVivaMar",
     description: "Instagram da hospedagem",
   })
   @IsOptional()
   @IsString()
   instagram?: string;
+
+  @ApiProperty({
+    example: "https://www.meusite.com.br",
+    description: "Site oficial",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  site?: string;
 
   @ApiProperty({
     example: "Av. Brasil, 1000",

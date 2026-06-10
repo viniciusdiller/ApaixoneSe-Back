@@ -20,8 +20,27 @@ export class HospedagemApplication {
   ) {}
 
   async create(data: any, usuarioId: string, logoUrl: string, pdfUrl: string) {
+    const dadosCriacao: any = { ...data };
+
+    delete dadosCriacao.logo;
+    delete dadosCriacao.documentoPdf;
+
+    if (dadosCriacao.tags) {
+      if (typeof dadosCriacao.tags === "string") {
+        try {
+          // Tenta fazer o parse se o frontend enviar '["Wi-Fi", "Piscina"]'
+          dadosCriacao.tags = JSON.parse(dadosCriacao.tags);
+        } catch (error) {
+          // Se enviar apenas uma string solta tipo 'Wi-Fi'
+          dadosCriacao.tags = [dadosCriacao.tags];
+        }
+      }
+    } else {
+      dadosCriacao.tags = [];
+    }
+
     const nova = new Hospedagem({
-      ...data,
+      ...dadosCriacao,
       usuarioId,
       logoUrl,
       documentoPdfUrl: pdfUrl,
@@ -96,13 +115,21 @@ export class HospedagemApplication {
     delete dadosAtualizacao.logo;
     delete dadosAtualizacao.documentoPdf;
 
+    if (dadosAtualizacao.tags !== undefined) {
+      if (typeof dadosAtualizacao.tags === "string") {
+        try {
+          dadosAtualizacao.tags = JSON.parse(dadosAtualizacao.tags);
+        } catch (error) {
+          dadosAtualizacao.tags = [dadosAtualizacao.tags];
+        }
+      }
+    }
+
     if (logoUrl) dadosAtualizacao.logoUrl = logoUrl;
     if (pdfUrl) dadosAtualizacao.documentoPdfUrl = pdfUrl;
 
     const atualizado = await this.repo.update(id, dadosAtualizacao);
 
-    // NOTA: Como você não criou o mapToResponseDto na hospedagem ainda, retornamos o objeto direto.
-    // Recomendo fazer o map para o HospedagemResponseDto aqui igual à Gastronomia!
     return this.mapToResponseDto(atualizado);
   }
 
@@ -127,23 +154,25 @@ export class HospedagemApplication {
     }
   }
 
-  private mapToResponseDto(g: Hospedagem): HospedagemResponseDto {
+  private mapToResponseDto(h: Hospedagem): HospedagemResponseDto {
     return {
-      id: g.id!,
-      nome: g.nome,
-      telefone: g.telefone,
-      instagram: g.instagram,
-      endereco: g.endereco,
-      textoDiferencial: g.textoDiferencial,
-      cnpj: g.cnpj,
-      responsavelNome: g.responsavelNome,
-      responsavelCpf: g.responsavelCpf,
-      documentoPdfUrl: g.documentoPdfUrl,
-      logoUrl: g.logoUrl,
-      status: g.status,
-      usuarioId: g.usuarioId,
-      createdAt: g.createdAt!,
-      updatedAt: g.updatedAt!,
+      id: h.id!,
+      nome: h.nome,
+      telefone: h.telefone,
+      tags: h.tags,
+      instagram: h.instagram,
+      site: h.site,
+      endereco: h.endereco,
+      textoDiferencial: h.textoDiferencial,
+      cnpj: h.cnpj,
+      responsavelNome: h.responsavelNome,
+      responsavelCpf: h.responsavelCpf,
+      documentoPdfUrl: h.documentoPdfUrl,
+      logoUrl: h.logoUrl,
+      status: h.status,
+      usuarioId: h.usuarioId,
+      createdAt: h.createdAt!,
+      updatedAt: h.updatedAt!,
     };
   }
 }

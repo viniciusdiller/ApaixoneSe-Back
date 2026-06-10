@@ -20,7 +20,29 @@ export class CreateServicoTuristaRequestDto {
   @IsOptional()
   @IsString()
   instagram?: string;
-  @ApiProperty({ required: false }) @IsOptional() @IsString() endereco?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  endereco?: string;
+
+  @ApiProperty({
+    example: "https://www.meusite.com.br",
+    description: "Site oficial",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  site?: string;
+
+  @ApiProperty({
+    example: "2024-12-31",
+    description: "Data de validade do serviço (se aplicável)",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  validade?: string;
 
   // ==========================================
   // CAMPOS ESPECÍFICOS: AGÊNCIA E ESPORTE
@@ -70,6 +92,7 @@ export class CreateServicoTuristaRequestDto {
     required: false,
     description: "Obrigatório para Agências, Esportes e Locadoras",
   })
+  @IsOptional()
   logo?: any;
 
   @ApiProperty({
@@ -78,5 +101,16 @@ export class CreateServicoTuristaRequestDto {
     required: false,
     description: "Obrigatório apenas para Guias",
   })
+  @IsOptional()
   foto?: any;
+
+  @ApiProperty({
+    type: "string",
+    format: "binary",
+    description:
+      "Comprovante do Cadastur (Obrigatório exceto Esporte_Lazer. PDF ou Imagem)",
+    required: false,
+  })
+  @IsOptional()
+  comprovante?: any;
 }

@@ -7,14 +7,13 @@ import {
   Body,
   Param,
   UseInterceptors,
-  UploadedFile,
-  BadRequestException,
+  UploadedFiles,
   HttpCode,
   HttpStatus,
   Req,
   UseGuards,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import {
   ApiTags,
   ApiOperation,
@@ -26,6 +25,7 @@ import { JwtAuthGuard } from "../guards/jwt-autg.guard";
 import { memoryStorage } from "multer";
 import * as fs from "fs";
 import * as path from "path";
+import sharp from "sharp";
 import { CatApplication } from "../../application/applications/cat.Application";
 import { CreateCatRequestDto } from "../dto/request/cat/createCatRequestDto";
 import { UpdateCatRequestDto } from "../dto/request/cat/updateCatRequestDto";
@@ -38,36 +38,55 @@ export class CatController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Registar nova informação do CAT (Apenas Admin)" })
+  @ApiOperation({
+    summary: "Cria informações do CAT com Múltiplas Imagens e 1 Vídeo",
+  })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateCatRequestDto })
-  @UseInterceptors(FileInterceptor("arquivo", { storage: memoryStorage() }))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: "imagens", maxCount: 10 },
+        { name: "video", maxCount: 1 },
+      ],
+      { storage: memoryStorage() },
+    ),
+  )
   async create(
     @Body() dto: CreateCatRequestDto,
     @Req() req: any,
-    @UploadedFile() arquivo?: Express.Multer.File,
+    @UploadedFiles()
+    files?: { imagens?: Express.Multer.File[]; video?: Express.Multer.File[] },
   ) {
-    if (!arquivo) {
-      throw new BadRequestException(
-        "O arquivo (mapa/informativo) é obrigatório.",
-      );
-    }
-
-    // Como o CAT não tem um "nome" de estabelecimento, usamos um timestamp para garantir uma pasta única
-    const nomePasta = `cat_${Date.now()}`;
-    const uploadDir = `./uploads/Cat/${nomePasta}`;
-
+    const uploadDir = `./uploads/cat/informacoes`;
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-    // Mantemos a extensão original enviada (ex: .pdf, .jpg)
-    const extensao = path.extname(arquivo.originalname) || ".pdf";
-    const nomeArquivo = `arquivo${extensao}`;
-    const caminhoFisico = path.join(uploadDir, nomeArquivo);
+    let imagensUrl: string[] = [];
+    let videoUrl: string | undefined = undefined;
 
-    fs.writeFileSync(caminhoFisico, arquivo.buffer);
-    const arquivoUrl = `/uploads/Cat/${nomePasta}/${nomeArquivo}`;
+    // 1. PROCESSAR MÚLTIPLAS IMAGENS
+    if (files?.imagens && files.imagens.length > 0) {
+      for (let i = 0; i < files.imagens.length; i++) {
+        const file = files.imagens[i];
+        const nomeImagem = `imagem_${Date.now()}_${i}.webp`;
+        await sharp(file.buffer)
+          .resize(800)
+          .webp({ quality: 80 })
+          .toFile(path.join(uploadDir, nomeImagem));
+        imagensUrl.push(`/uploads/cat/informacoes/${nomeImagem}`);
+      }
+    }
 
-    return this.app.create(dto, req.user, arquivoUrl);
+    // 2. PROCESSAR O VÍDEO
+    if (files?.video && files.video.length > 0) {
+      const videoFile = files.video[0];
+      const ext = path.extname(videoFile.originalname).toLowerCase() || ".mp4";
+      const nomeVideo = `video_${Date.now()}${ext}`;
+      fs.writeFileSync(path.join(uploadDir, nomeVideo), videoFile.buffer);
+      videoUrl = `/uploads/cat/informacoes/${nomeVideo}`;
+    }
+
+    return this.app.create(dto, req.user, imagensUrl, videoUrl);
   }
 
   @Get()
@@ -88,41 +107,59 @@ export class CatController {
   @ApiOperation({ summary: "Atualiza uma informação do CAT (Apenas Admin)" })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: UpdateCatRequestDto })
-  @UseInterceptors(FileInterceptor("arquivo", { storage: memoryStorage() }))
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      // 👈 Atualizado para o padrão do create
+      [
+        { name: "imagens", maxCount: 10 },
+        { name: "video", maxCount: 1 },
+      ],
+      { storage: memoryStorage() },
+    ),
+  )
   async update(
     @Param("id") id: string,
     @Body() dto: UpdateCatRequestDto,
     @Req() req: any,
-    @UploadedFile() arquivo?: Express.Multer.File,
+    @UploadedFiles()
+    files?: { imagens?: Express.Multer.File[]; video?: Express.Multer.File[] },
   ) {
-    let arquivoUrl: string | undefined;
+    const uploadDir = `./uploads/cat/informacoes`;
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-    if (arquivo) {
-      // Pega o caminho antigo para substituir no mesmo lugar
-      const existente = await this.app.findById(id);
-      let uploadDir = "";
+    let imagensUrl: string[] = [];
+    let videoUrl: string | undefined = undefined;
 
-      if (existente.arquivoUrl) {
-        uploadDir = `./${path.dirname(existente.arquivoUrl)}`;
-      } else {
-        const nomePasta = `cat_${Date.now()}`;
-        uploadDir = `./uploads/Cat/${nomePasta}`;
+    // 1. PROCESSAR NOVAS IMAGENS (Se enviadas)
+    if (files?.imagens && files.imagens.length > 0) {
+      for (let i = 0; i < files.imagens.length; i++) {
+        const file = files.imagens[i];
+        const nomeImagem = `imagem_${i}.webp`;
+        await sharp(file.buffer)
+          .resize(800)
+          .webp({ quality: 80 })
+          .toFile(path.join(uploadDir, nomeImagem));
+        imagensUrl.push(`/uploads/cat/informacoes/${nomeImagem}`);
       }
-
-      if (!fs.existsSync(uploadDir))
-        fs.mkdirSync(uploadDir, { recursive: true });
-
-      const extensao = path.extname(arquivo.originalname) || ".pdf";
-      const nomeArquivo = `arquivo_${Date.now()}${extensao}`; // timestamp para evitar cache no frontend
-      const caminhoFisico = path.join(uploadDir, nomeArquivo);
-
-      fs.writeFileSync(caminhoFisico, arquivo.buffer);
-
-      // Limpar a formatação da string para gravar na DB corretamente
-      arquivoUrl = `${uploadDir.replace("./", "/")}/${nomeArquivo}`;
     }
 
-    return this.app.update(id, dto, req.user, arquivoUrl);
+    // 2. PROCESSAR O NOVO VÍDEO (Se enviado)
+    if (files?.video && files.video.length > 0) {
+      const videoFile = files.video[0];
+      const ext = path.extname(videoFile.originalname).toLowerCase() || ".mp4";
+      const nomeVideo = `video_${ext}`;
+      fs.writeFileSync(path.join(uploadDir, nomeVideo), videoFile.buffer);
+      videoUrl = `/uploads/cat/informacoes/${nomeVideo}`;
+    }
+
+    // 👈 Atualizado para passar os arrays corretamente
+    return this.app.update(
+      id,
+      dto,
+      req.user,
+      imagensUrl.length > 0 ? imagensUrl : undefined,
+      videoUrl,
+    );
   }
 
   @Delete(":id")

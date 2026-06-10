@@ -3,18 +3,18 @@ import { IsNotEmpty, IsString } from "class-validator";
 
 export class CreateSecretariaRequestDto {
   @ApiProperty({
-    example: "Bem-vindo à Secretaria de Turismo de Saquarema...",
+    example: "Bem-vindo \u00e0 Secretaria de Turismo de Saquarema...",
     description: "Texto explicativo institucional",
   })
   @IsString()
   @IsNotEmpty()
-  textoExplicativo: string;
+  textoExplicativo!: string;
 
   @ApiProperty({
     type: "string",
     format: "binary",
     required: false,
-    description: "Arquivo de vídeo institucional",
+    description: "Arquivo de v\u00eddeo institucional",
   })
   video?: any;
 }

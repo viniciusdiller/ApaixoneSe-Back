@@ -4,19 +4,19 @@ import { IsNotEmpty, IsString } from "class-validator";
 export class CreateProjetoRequestDto {
   @ApiProperty({
     example: "Curso de Atendimento ao Turista",
-    description: "Título do Curso/Projeto",
+    description: "T\u00edtulo do Curso/Projeto",
   })
   @IsString()
   @IsNotEmpty()
-  titulo: string;
+  titulo!: string;
 
   @ApiProperty({
-    example: "Capacitação gratuita voltada para moradores locais...",
-    description: "Descrição do curso",
+    example: "Capacita\u00e7\u00e3o gratuita voltada para moradores locais...",
+    description: "Descri\u00e7\u00e3o do curso",
   })
   @IsString()
   @IsNotEmpty()
-  descricao: string;
+  descricao!: string;
 
   @ApiProperty({
     type: "string",

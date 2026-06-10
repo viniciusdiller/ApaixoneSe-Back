@@ -4,11 +4,11 @@ import { IsNotEmpty, IsString } from "class-validator";
 export class CreateTuristandoRequestDto {
   @ApiProperty({
     example: "Igreja de Nossa Senhora de Nazareth",
-    description: "Título do bloco Turistando",
+    description: "T\u00edtulo do bloco Turistando",
   })
   @IsString()
   @IsNotEmpty()
-  titulo: string;
+  titulo!: string;
 
   @ApiProperty({
     example: "Um dos pontos mais visitados da cidade de Saquarema...",
@@ -16,12 +16,12 @@ export class CreateTuristandoRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  texto: string;
+  texto!: string;
 
   @ApiProperty({
     type: "array",
     items: { type: "string", format: "binary" },
-    description: "Múltiplas imagens do local",
+    description: "M\u00faltiplas imagens do local",
   })
   imagens?: any[];
 }

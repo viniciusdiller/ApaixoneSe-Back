@@ -37,10 +37,7 @@ export class SecretariaTurismoRepository implements ISecretariaTurismoRepository
     return new SecretariaTurismo(s);
   }
 
-  async update(
-    id: string,
-    data: Partial<SecretariaTurismo>,
-  ): Promise<SecretariaTurismo> {
+  async update(id: string, data: Partial<SecretariaTurismo>): Promise<SecretariaTurismo> {
     const atualizado = await this.prisma.secretariaTurismo.update({
       where: { id },
       data: {
@@ -56,11 +53,31 @@ export class SecretariaTurismoRepository implements ISecretariaTurismoRepository
     await this.prisma.secretariaTurismo.delete({ where: { id } });
   }
 
-  // ================= TURISTANDO SUB-METHODS =================
-  async saveTuristando(
-    data: SecretariaTurismoTuristando,
-  ): Promise<SecretariaTurismoTuristando> {
+  // ================= TURISTANDO =================
+
+  async saveTuristando(data: SecretariaTurismoTuristando): Promise<SecretariaTurismoTuristando> {
     const t = await this.prisma.secretariaTurismoTuristando.create({ data });
+    return new SecretariaTurismoTuristando(t);
+  }
+
+  async findTuristandoById(id: string): Promise<SecretariaTurismoTuristando | null> {
+    const t = await this.prisma.secretariaTurismoTuristando.findUnique({ where: { id } });
+    if (!t) return null;
+    return new SecretariaTurismoTuristando(t);
+  }
+
+  async updateTuristando(
+    id: string,
+    data: Partial<SecretariaTurismoTuristando>,
+  ): Promise<SecretariaTurismoTuristando> {
+    const t = await this.prisma.secretariaTurismoTuristando.update({
+      where: { id },
+      data: {
+        titulo: data.titulo,
+        texto: data.texto,
+        imagensUrl: data.imagensUrl,
+      },
+    });
     return new SecretariaTurismoTuristando(t);
   }
 
@@ -68,15 +85,47 @@ export class SecretariaTurismoRepository implements ISecretariaTurismoRepository
     await this.prisma.secretariaTurismoTuristando.delete({ where: { id } });
   }
 
-  // ================= PROJETOS SUB-METHODS =================
-  async saveProjeto(
-    data: SecretariaTurismoProjeto,
-  ): Promise<SecretariaTurismoProjeto> {
+  async deleteManyTuristandos(ids: string[]): Promise<void> {
+    await this.prisma.secretariaTurismoTuristando.deleteMany({
+      where: { id: { in: ids } },
+    });
+  }
+
+  // ================= PROJETOS =================
+
+  async saveProjeto(data: SecretariaTurismoProjeto): Promise<SecretariaTurismoProjeto> {
     const p = await this.prisma.secretariaTurismoProjeto.create({ data });
+    return new SecretariaTurismoProjeto(p);
+  }
+
+  async findProjetoById(id: string): Promise<SecretariaTurismoProjeto | null> {
+    const p = await this.prisma.secretariaTurismoProjeto.findUnique({ where: { id } });
+    if (!p) return null;
+    return new SecretariaTurismoProjeto(p);
+  }
+
+  async updateProjeto(
+    id: string,
+    data: Partial<SecretariaTurismoProjeto>,
+  ): Promise<SecretariaTurismoProjeto> {
+    const p = await this.prisma.secretariaTurismoProjeto.update({
+      where: { id },
+      data: {
+        titulo: data.titulo,
+        descricao: data.descricao,
+        imagemUrl: data.imagemUrl,
+      },
+    });
     return new SecretariaTurismoProjeto(p);
   }
 
   async deleteProjeto(id: string): Promise<void> {
     await this.prisma.secretariaTurismoProjeto.delete({ where: { id } });
+  }
+
+  async deleteManyProjetos(ids: string[]): Promise<void> {
+    await this.prisma.secretariaTurismoProjeto.deleteMany({
+      where: { id: { in: ids } },
+    });
   }
 }

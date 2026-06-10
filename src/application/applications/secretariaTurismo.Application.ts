@@ -21,6 +21,8 @@ export class SecretariaTurismoApplication {
     }
   }
 
+  // ================= SECRETARIA PRINCIPAL =================
+
   async create(data: any, usuario: IUsuarioLogado, videoUrl?: string) {
     this.verificarAdmin(usuario);
     const nova = new SecretariaTurismo({ ...data, videoUrl });
@@ -38,14 +40,9 @@ export class SecretariaTurismoApplication {
     return s;
   }
 
-  async update(
-    id: string,
-    data: any,
-    usuario: IUsuarioLogado,
-    videoUrl?: string,
-  ) {
+  async update(id: string, data: any, usuario: IUsuarioLogado, videoUrl?: string) {
     this.verificarAdmin(usuario);
-    const existente = await this.findById(id);
+    await this.findById(id);
     if (videoUrl) data.videoUrl = videoUrl;
     return this.repo.update(id, data);
   }
@@ -56,10 +53,10 @@ export class SecretariaTurismoApplication {
     await this.repo.delete(id);
   }
 
-  // ================= SUB-RESOURCES MANAGEMENT =================
+  // ================= TURISTANDO =================
 
   async addTuristando(
-    secretariaId: String | any,
+    secretariaId: string,
     data: any,
     usuario: IUsuarioLogado,
     imagensUrl: string[],
@@ -74,8 +71,38 @@ export class SecretariaTurismoApplication {
     return this.repo.saveTuristando(novo);
   }
 
+  async updateTuristando(
+    turistandoId: string,
+    data: any,
+    usuario: IUsuarioLogado,
+    imagensUrl?: string[],
+  ) {
+    this.verificarAdmin(usuario);
+    const existente = await this.repo.findTuristandoById(turistandoId);
+    if (!existente)
+      throw new NotFoundException("Bloco Turistando não encontrado.");
+    const payload: Partial<SecretariaTurismoTuristando> = { ...data };
+    if (imagensUrl && imagensUrl.length > 0) payload.imagensUrl = imagensUrl;
+    return this.repo.updateTuristando(turistandoId, payload);
+  }
+
+  async deleteTuristando(turistandoId: string, usuario: IUsuarioLogado) {
+    this.verificarAdmin(usuario);
+    const existente = await this.repo.findTuristandoById(turistandoId);
+    if (!existente)
+      throw new NotFoundException("Bloco Turistando não encontrado.");
+    await this.repo.deleteTuristando(turistandoId);
+  }
+
+  async deleteManyTuristandos(ids: string[], usuario: IUsuarioLogado) {
+    this.verificarAdmin(usuario);
+    await this.repo.deleteManyTuristandos(ids);
+  }
+
+  // ================= PROJETOS =================
+
   async addProjeto(
-    secretariaId: String | any,
+    secretariaId: string,
     data: any,
     usuario: IUsuarioLogado,
     imagemUrl?: string,
@@ -88,5 +115,33 @@ export class SecretariaTurismoApplication {
       imagemUrl,
     });
     return this.repo.saveProjeto(novo);
+  }
+
+  async updateProjeto(
+    projetoId: string,
+    data: any,
+    usuario: IUsuarioLogado,
+    imagemUrl?: string,
+  ) {
+    this.verificarAdmin(usuario);
+    const existente = await this.repo.findProjetoById(projetoId);
+    if (!existente)
+      throw new NotFoundException("Projeto não encontrado.");
+    const payload: Partial<SecretariaTurismoProjeto> = { ...data };
+    if (imagemUrl) payload.imagemUrl = imagemUrl;
+    return this.repo.updateProjeto(projetoId, payload);
+  }
+
+  async deleteProjeto(projetoId: string, usuario: IUsuarioLogado) {
+    this.verificarAdmin(usuario);
+    const existente = await this.repo.findProjetoById(projetoId);
+    if (!existente)
+      throw new NotFoundException("Projeto não encontrado.");
+    await this.repo.deleteProjeto(projetoId);
+  }
+
+  async deleteManyProjetos(ids: string[], usuario: IUsuarioLogado) {
+    this.verificarAdmin(usuario);
+    await this.repo.deleteManyProjetos(ids);
   }
 }

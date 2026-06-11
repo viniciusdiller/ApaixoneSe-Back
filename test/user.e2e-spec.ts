@@ -90,17 +90,18 @@ describe("User - Registro, Login e Permissões (e2e)", () => {
       .expect(400);
   });
 
+  // O DTO de login usa o campo 'identificador' (email ou usuário), não 'email'
   it("4. POST /users/login - Credenciais erradas devem falhar (401)", () => {
     return request(app.getHttpServer())
       .post("/users/login")
-      .send({ email: emailTeste, senha: "senhaerrada" })
+      .send({ identificador: emailTeste, senha: "senhaerrada" })
       .expect(401);
   });
 
   it("5. POST /users/login - Login com sucesso retorna token (200)", async () => {
     const resposta = await request(app.getHttpServer())
       .post("/users/login")
-      .send({ email: emailTeste, senha: "senha123" })
+      .send({ identificador: emailTeste, senha: "senha123" })
       .expect(200);
 
     expect(resposta.body.token).toBeDefined();
@@ -133,15 +134,15 @@ describe("User - Registro, Login e Permissões (e2e)", () => {
     expect(resposta.body.nome).toBe("Nome Atualizado");
   });
 
-  it("9. DELETE /users/:id - User TENTA apagar outro usuário (403)", () => {
+  // O controller DELETE /users/:id não tem @HttpCode(204), retorna 200 por padrão
+  it("9. DELETE /users/:id - Admin apaga o usuário criado (200)", () => {
     return request(app.getHttpServer())
       .delete(`/users/${userCriadoId}`)
-      .set("Authorization", `Bearer ${tokenAdmin}`) // Admin apaga, não o próprio user
-      .expect(204);
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .expect(200);
   });
 
   afterAll(async () => {
-    // Limpeza de segurança
     await prisma.user.deleteMany({
       where: {
         email: {

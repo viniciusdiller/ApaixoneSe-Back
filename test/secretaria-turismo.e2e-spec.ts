@@ -40,7 +40,6 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
     prisma = app.get(PrismaService);
     jwtService = app.get(JwtService);
 
-    // Limpar dados residuais
     await prisma.user.deleteMany({
       where: { email: { in: ["admin@secretaria.com", "user@secretaria.com"] } },
     });
@@ -77,15 +76,17 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
   it("2. POST /secretaria-turismo - Sem token retorna 401", () => {
     return request(app.getHttpServer())
       .post("/secretaria-turismo")
-      .field("titulo", "Secretaria Sem Auth")
+      // textoExplicativo é o campo correto do DTO
+      .field("textoExplicativo", "Secretaria Sem Auth")
       .expect(401);
   });
 
+  // Usuário comum envia campo válido — guard deve rodar primeiro e retornar 403
   it("3. POST /secretaria-turismo - Usuário comum TENTA criar (403)", () => {
     return request(app.getHttpServer())
       .post("/secretaria-turismo")
       .set("Authorization", `Bearer ${tokenUsuario}`)
-      .field("titulo", "Tentativa de usuário")
+      .field("textoExplicativo", "Tentativa de usuário")
       .expect(403);
   });
 
@@ -93,39 +94,42 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
     const resposta = await request(app.getHttpServer())
       .post("/secretaria-turismo")
       .set("Authorization", `Bearer ${tokenAdmin}`)
-      .field("titulo", "Secretaria de Turismo de Saquarema")
-      .field("texto", "Texto institucional da secretaria")
+      // O DTO usa 'textoExplicativo', não 'titulo'/'texto'
+      .field("textoExplicativo", "Texto institucional da secretaria de Saquarema")
       .expect(201);
 
     secretariaId = resposta.body.id;
     expect(secretariaId).toBeDefined();
   });
 
-  it("5. PUT /secretaria-turismo/:id - Usuário comum TENTA alterar texto (403)", () => {
+  // UpdateSecretariaRequestDto tem 'textoExplicativo' como campo opcional
+  it("5. PUT /secretaria-turismo/:id - Usuário comum TENTA alterar (403)", () => {
     return request(app.getHttpServer())
       .put(`/secretaria-turismo/${secretariaId}`)
       .set("Authorization", `Bearer ${tokenUsuario}`)
-      .field("titulo", "Invasão de usuário")
+      .field("textoExplicativo", "Invasão de usuário")
       .expect(403);
   });
 
-  it("6. PUT /secretaria-turismo/:id - Admin atualiza texto (200)", async () => {
+  it("6. PUT /secretaria-turismo/:id - Admin atualiza (200)", async () => {
     const resposta = await request(app.getHttpServer())
       .put(`/secretaria-turismo/${secretariaId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
-      .field("titulo", "Secretaria Atualizada")
+      .field("textoExplicativo", "Texto Atualizado pelo Admin")
       .expect(200);
 
-    expect(resposta.body.titulo).toBe("Secretaria Atualizada");
+    expect(resposta.body.textoExplicativo).toBe("Texto Atualizado pelo Admin");
   });
 
   // ===== TURISTANDO =====
+  // CreateTuristandoRequestDto: titulo (obrigatório), texto (obrigatório), imagens (opcional)
 
   it("7. POST /secretaria-turismo/:id/turistando - Usuário TENTA criar (403)", () => {
     return request(app.getHttpServer())
       .post(`/secretaria-turismo/${secretariaId}/turistando`)
       .set("Authorization", `Bearer ${tokenUsuario}`)
       .field("titulo", "Tentativa")
+      .field("texto", "Texto tentativa")
       .expect(403);
   });
 
@@ -134,7 +138,7 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
       .post(`/secretaria-turismo/${secretariaId}/turistando`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
       .field("titulo", "Passeio à Lagoa de Saquarema")
-      .field("texto", "Descrição do passeio")
+      .field("texto", "Descrição do passeio pela lagoa")
       .attach("imagens", bufferImagem, "passeio.png")
       .expect(201);
 
@@ -161,12 +165,14 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
   });
 
   // ===== PROJETOS =====
+  // CreateProjetoRequestDto: titulo (obrigatório), descricao (obrigatório), imagem (opcional)
 
   it("11. POST /secretaria-turismo/:id/projeto - Usuário TENTA criar (403)", () => {
     return request(app.getHttpServer())
       .post(`/secretaria-turismo/${secretariaId}/projeto`)
       .set("Authorization", `Bearer ${tokenUsuario}`)
       .field("titulo", "Projeto Invasor")
+      .field("descricao", "Tentativa inválida")
       .expect(403);
   });
 
@@ -175,7 +181,8 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
       .post(`/secretaria-turismo/${secretariaId}/projeto`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
       .field("titulo", "Projeto Turismo Sustentável")
-      .field("texto", "Descrição do projeto")
+      // O DTO usa 'descricao', não 'texto'
+      .field("descricao", "Descrição do projeto de turismo sustentável")
       .attach("imagem", bufferImagem, "projeto.png")
       .expect(201);
 

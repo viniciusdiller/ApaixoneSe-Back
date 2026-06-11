@@ -40,7 +40,6 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     prisma = app.get(PrismaService);
     jwtService = app.get(JwtService);
 
-    // Limpar dados residuais
     await prisma.user.deleteMany({
       where: {
         email: {
@@ -96,34 +95,34 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .expect(401);
   });
 
+  // AGENCIA_TURISMO exige logo — enviar 'foto' ao invés de 'logo' deve retornar 400
   it("3. POST /servico-turista - Agência sem Logo deve falhar (400)", () => {
     return request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
       .field("nome", "Agência Bugada")
       .field("tipo", "AGENCIA_TURISMO")
-      // Enviando 'foto' em vez de 'logo' — controller deve rejeitar com 400
       .attach("foto", bufferImagem, "foto.png")
       .expect(400);
   });
 
+  // AGENCIA_TURISMO exige logo + comprovante — sem comprovante deve retornar 400
   it("4. POST /servico-turista - Agência sem comprovante deve falhar (400)", () => {
     return request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
       .field("nome", "Agência Sem Comprovante")
       .field("tipo", "AGENCIA_TURISMO")
-      // Tem logo mas não tem comprovante — deve retornar 400
       .attach("logo", bufferImagem, "logo.png")
       .expect(400);
   });
 
+  // ESPORTE_LAZER é o único tipo que não exige comprovante
   it("5. POST /servico-turista - ESPORTE_LAZER não exige comprovante (201)", async () => {
-    // ESPORTE_LAZER é o único tipo que não exige comprovante
     const resposta = await request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
-      .field("nome", "Esporte E2E Temp")
+      .field("nome", `EsporteE2E${Date.now()}`)
       .field("telefone", "999000000")
       .field("tipo", "ESPORTE_LAZER")
       .attach("logo", bufferImagem, "logo.png")
@@ -138,14 +137,14 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     }
   });
 
+  // AGENCIA_TURISMO: logo + comprovante obrigatórios
   it("6. POST /servico-turista - Criar Agência com sucesso (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
-      .field("nome", "Agencia E2E")
+      .field("nome", `AgenciaE2E${Date.now()}`)
       .field("telefone", "999999999")
       .field("tipo", "AGENCIA_TURISMO")
-      // CORREÇÃO: Agência exige logo + comprovante
       .attach("logo", bufferImagem, "logo.png")
       .attach("comprovante", bufferImagem, "comprovante.png")
       .expect(201);
@@ -220,9 +219,11 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
         },
       },
     });
-    const pastaFisica = path.join(".", "uploads", "servico_turista");
-    if (fs.existsSync(pastaFisica))
-      fs.rmSync(pastaFisica, { recursive: true, force: true });
+
+    const pastaServico = path.join(".", "uploads", "servico_turista");
+    if (fs.existsSync(pastaServico))
+      fs.rmSync(pastaServico, { recursive: true, force: true });
+
     await app.close();
   });
 });

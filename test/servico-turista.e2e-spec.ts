@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { INestApplication } from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import { AppModule } from "./../src/app.module";
 import { PrismaService } from "./../src/data/providers/db/prisma.Service";
@@ -21,6 +21,10 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
     "base64",
   );
+  const bufferPdf = Buffer.from(
+    "%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n>>\nendobj\ntrailer\n<<\n/Root 1 0 R\n>>\n%%EOF",
+    "utf-8",
+  );
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -31,6 +35,9 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
+    );
     await app.init();
 
     prisma = app.get(PrismaService);
@@ -75,37 +82,48 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     });
   });
 
-  it("1. GET /servico-turista - Listar (200)", () => {
+  it("1. GET /servico-turista - Listar publicamente (200)", () => {
     return request(app.getHttpServer()).get("/servico-turista").expect(200);
   });
 
-  it("2. POST /servico-turista - Agência sem Logo deve falhar (400)", () => {
-    return (
-      request(app.getHttpServer())
-        .post("/servico-turista")
-        .set("Authorization", `Bearer ${tokenDono}`)
-        .field("nome", "Agência Bugada")
-        .field("tipo", "AGENCIA_TURISMO")
-        // Enviando 'foto' em vez de 'logo' para testar a validação do controller
-        .attach("foto", bufferImagem, "foto.png")
-        .expect(400)
-    );
+  it("2. POST /servico-turista - Sem token deve bloquear (401)", () => {
+    return request(app.getHttpServer())
+      .post("/servico-turista")
+      .field("nome", "Agência Sem Token")
+      .field("tipo", "AGENCIA_TURISMO")
+      .expect(401);
   });
 
-  it("3. POST /servico-turista - Criar Agência com sucesso (201)", async () => {
+  it("3. POST /servico-turista - Agência sem logo deve falhar (400)", () => {
+    return request(app.getHttpServer())
+      .post("/servico-turista")
+      .set("Authorization", `Bearer ${tokenDono}`)
+      .field("nome", "Agência Bugada")
+      .field("telefone", "999999999")
+      .field("tipo", "AGENCIA_TURISMO")
+      // Envia 'foto' em vez de 'logo' para agência — deve falhar
+      .attach("foto", bufferImagem, "foto.png")
+      .expect(400);
+  });
+
+  it("4. POST /servico-turista - Criar Agência com sucesso (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
       .field("nome", "Agencia E2E")
       .field("telefone", "999999999")
       .field("tipo", "AGENCIA_TURISMO")
-      .attach("logo", bufferImagem, "logo.png") // Agência pede logo
+      .field("descricao", "Agência de turismo para testes E2E")
+      .attach("logo", bufferImagem, "logo.png")
+      .attach("comprovante", bufferPdf, "comprovante.pdf")
       .expect(201);
 
     servicoCriadoId = resposta.body.id;
+    expect(servicoCriadoId).toBeDefined();
+    expect(resposta.body.status).toBe("PENDENTE");
   });
 
-  it("4. PUT /servico-turista/:id - Invasor tenta alterar (403)", () => {
+  it("5. PUT /servico-turista/:id - Invasor tenta alterar (403)", () => {
     return request(app.getHttpServer())
       .put(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenInvasor}`)
@@ -113,15 +131,32 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .expect(403);
   });
 
-  it("5. PUT /servico-turista/:id - Admin aprova (200)", () => {
+  it("6. PUT /servico-turista/:id - Dono tenta se AUTO-APROVAR (403)", () => {
     return request(app.getHttpServer())
+      .put(`/servico-turista/${servicoCriadoId}`)
+      .set("Authorization", `Bearer ${tokenDono}`)
+      .field("status", "APROVADO")
+      .expect(403);
+  });
+
+  it("7. PUT /servico-turista/:id - Admin aprova (200)", async () => {
+    const resposta = await request(app.getHttpServer())
       .put(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
       .field("status", "APROVADO")
       .expect(200);
+
+    expect(resposta.body.status).toBe("APROVADO");
   });
 
-  it("6. DELETE /servico-turista/:id - Admin apaga (204)", () => {
+  it("8. DELETE /servico-turista/:id - Invasor tenta apagar (403)", () => {
+    return request(app.getHttpServer())
+      .delete(`/servico-turista/${servicoCriadoId}`)
+      .set("Authorization", `Bearer ${tokenInvasor}`)
+      .expect(403);
+  });
+
+  it("9. DELETE /servico-turista/:id - Admin apaga (204)", () => {
     return request(app.getHttpServer())
       .delete(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)

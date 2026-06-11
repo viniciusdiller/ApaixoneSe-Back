@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import { AppModule } from "./../src/app.module";
 import { PrismaService } from "./../src/data/providers/db/prisma.Service";
-import { JwtService, JwtModule } from "@nextjs/jwt";
+import { JwtService, JwtModule } from "@nestjs/jwt";
 import * as fs from "fs";
 import * as path from "path";
 

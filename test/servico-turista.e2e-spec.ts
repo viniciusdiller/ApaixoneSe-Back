@@ -15,7 +15,9 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
   let tokenDono: string;
   let tokenAdmin: string;
   let tokenInvasor: string;
+  let tokenParceiro: string; // 🤝 Parceiro: usuário aprovado com serviço próprio
   let servicoCriadoId: string;
+  let servicoParceiroId: string;
 
   const bufferImagem = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
@@ -42,7 +44,12 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     await prisma.user.deleteMany({
       where: {
         email: {
-          in: ["donoserv@teste.com", "adminserv@teste.com", "invasorserv@teste.com"],
+          in: [
+            "donoserv@teste.com",
+            "adminserv@teste.com",
+            "invasorserv@teste.com",
+            "parceiro@serv.com",
+          ],
         },
       },
     });
@@ -74,10 +81,21 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
         perfil: "USUARIO",
       },
     });
+    // 🤝 PARCEIRO: usuário com perfil já promovido
+    const userParceiro = await prisma.user.create({
+      data: {
+        nome: "Parceiro Serv",
+        email: "parceiro@serv.com",
+        senha: "123",
+        usuario: "parceiroserv",
+        perfil: "PARCEIRO",
+      },
+    });
 
     tokenDono = jwtService.sign({ sub: userDono.id, perfil: userDono.perfil });
     tokenAdmin = jwtService.sign({ sub: userAdmin.id, perfil: userAdmin.perfil });
     tokenInvasor = jwtService.sign({ sub: userInvasor.id, perfil: userInvasor.perfil });
+    tokenParceiro = jwtService.sign({ sub: userParceiro.id, perfil: userParceiro.perfil });
   });
 
   it("1. GET /servico-turista - Listar (200)", () => {
@@ -96,7 +114,6 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .expect(401);
   });
 
-  // GUIA_TURISMO exige: foto (não logo), cnpj, roteiro, idiomas
   it("3. POST /servico-turista - Guia sem foto deve falhar (400)", () => {
     return request(app.getHttpServer())
       .post("/servico-turista")
@@ -107,11 +124,9 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .field("cnpj", "00.000.000/0001-00")
       .field("roteiro", "CULTURAL")
       .field("idiomas", "Português")
-      // não envia 'foto' — deve retornar 400
       .expect(400);
   });
 
-  // AGENCIA_TURISMO exige: logo + comprovante + descricao
   it("4. POST /servico-turista - Agência sem comprovante deve falhar (400)", () => {
     return request(app.getHttpServer())
       .post("/servico-turista")
@@ -121,11 +136,9 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .field("tipo", "AGENCIA_TURISMO")
       .field("descricao", "Agência sem comprovante de Cadastur")
       .attach("logo", bufferImagem, "logo.png")
-      // não envia 'comprovante' — deve retornar 400
       .expect(400);
   });
 
-  // ESPORTE_LAZER: logo + descricao, sem comprovante
   it("5. POST /servico-turista - ESPORTE_LAZER não exige comprovante (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post("/servico-turista")
@@ -137,7 +150,6 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .attach("logo", bufferImagem, "logo.png")
       .expect(201);
 
-    // Limpar registro temporário
     const idTemp = resposta.body.id;
     if (idTemp) {
       await request(app.getHttpServer())
@@ -146,8 +158,7 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     }
   });
 
-  // AGENCIA_TURISMO: logo + comprovante + descricao
-  it("6. POST /servico-turista - Criar Agência com sucesso (201)", async () => {
+  it("6. POST /servico-turista - Dono cria Agência com sucesso (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
@@ -163,13 +174,29 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     expect(servicoCriadoId).toBeDefined();
   });
 
-  it("7. GET /servico-turista/:id - Busca pelo ID criado (200)", () => {
+  it("7. POST /servico-turista - PARCEIRO pode criar seu próprio serviço (201)", async () => {
+    const resposta = await request(app.getHttpServer())
+      .post("/servico-turista")
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .field("nome", `AgenciaParceiroE2E${Date.now()}`)
+      .field("telefone", "888888888")
+      .field("tipo", "AGENCIA_TURISMO")
+      .field("descricao", "Agência do parceiro com guias locais")
+      .attach("logo", bufferImagem, "logo.png")
+      .attach("comprovante", bufferImagem, "comprovante.png")
+      .expect(201);
+
+    servicoParceiroId = resposta.body.id;
+    expect(servicoParceiroId).toBeDefined();
+  });
+
+  it("8. GET /servico-turista/:id - Busca pelo ID criado (200)", () => {
     return request(app.getHttpServer())
       .get(`/servico-turista/${servicoCriadoId}`)
       .expect(200);
   });
 
-  it("8. PUT /servico-turista/:id - Invasor tenta alterar (403)", () => {
+  it("9. PUT /servico-turista/:id - Invasor tenta alterar serviço do Dono (403)", () => {
     return request(app.getHttpServer())
       .put(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenInvasor}`)
@@ -177,7 +204,15 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .expect(403);
   });
 
-  it("9. PUT /servico-turista/:id - Dono atualiza próprio serviço (200)", () => {
+  it("10. PUT /servico-turista/:id - PARCEIRO tenta alterar serviço do Dono (403)", () => {
+    return request(app.getHttpServer())
+      .put(`/servico-turista/${servicoCriadoId}`)
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .field("telefone", "111")
+      .expect(403);
+  });
+
+  it("11. PUT /servico-turista/:id - Dono atualiza próprio serviço (200)", () => {
     return request(app.getHttpServer())
       .put(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenDono}`)
@@ -185,7 +220,15 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .expect(200);
   });
 
-  it("10. PUT /servico-turista/:id - Usuário tenta alterar status (403)", () => {
+  it("12. PUT /servico-turista/:id - PARCEIRO pode editar seu próprio serviço (200)", () => {
+    return request(app.getHttpServer())
+      .put(`/servico-turista/${servicoParceiroId}`)
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .field("telefone", "777777777")
+      .expect(200);
+  });
+
+  it("13. PUT /servico-turista/:id - Usuário tenta alterar status (403)", () => {
     return request(app.getHttpServer())
       .put(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenDono}`)
@@ -193,7 +236,15 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .expect(403);
   });
 
-  it("11. PUT /servico-turista/:id - Admin aprova (200)", () => {
+  it("14. PUT /servico-turista/:id - PARCEIRO tenta aprovar o próprio serviço (403)", () => {
+    return request(app.getHttpServer())
+      .put(`/servico-turista/${servicoParceiroId}`)
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .field("status", "APROVADO")
+      .expect(403);
+  });
+
+  it("15. PUT /servico-turista/:id - Admin aprova serviço do Dono (200)", () => {
     return request(app.getHttpServer())
       .put(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
@@ -201,21 +252,35 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .expect(200);
   });
 
-  it("12. DELETE /servico-turista/:id - Invasor tenta apagar (403)", () => {
+  it("16. DELETE /servico-turista/:id - Invasor tenta apagar serviço do Dono (403)", () => {
     return request(app.getHttpServer())
       .delete(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenInvasor}`)
       .expect(403);
   });
 
-  it("13. DELETE /servico-turista/:id - Admin apaga (204)", () => {
+  it("17. DELETE /servico-turista/:id - PARCEIRO tenta apagar serviço do Dono (403)", () => {
+    return request(app.getHttpServer())
+      .delete(`/servico-turista/${servicoCriadoId}`)
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .expect(403);
+  });
+
+  it("18. DELETE /servico-turista/:id - Admin apaga serviço do Parceiro (204)", () => {
+    return request(app.getHttpServer())
+      .delete(`/servico-turista/${servicoParceiroId}`)
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .expect(204);
+  });
+
+  it("19. DELETE /servico-turista/:id - Admin apaga serviço do Dono (204)", () => {
     return request(app.getHttpServer())
       .delete(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
       .expect(204);
   });
 
-  it("14. GET /servico-turista/:id - Após deletar retorna 404", () => {
+  it("20. GET /servico-turista/:id - Após deletar retorna 404", () => {
     return request(app.getHttpServer())
       .get(`/servico-turista/${servicoCriadoId}`)
       .expect(404);
@@ -225,7 +290,12 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     await prisma.user.deleteMany({
       where: {
         email: {
-          in: ["donoserv@teste.com", "adminserv@teste.com", "invasorserv@teste.com"],
+          in: [
+            "donoserv@teste.com",
+            "adminserv@teste.com",
+            "invasorserv@teste.com",
+            "parceiro@serv.com",
+          ],
         },
       },
     });

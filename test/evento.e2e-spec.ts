@@ -11,6 +11,7 @@ describe("Eventos - Apenas Admin (e2e)", () => {
   let jwtService: JwtService;
 
   let tokenComum: string;
+  let tokenParceiro: string;
   let tokenAdmin: string;
   let eventoCriadoId: string;
 
@@ -28,6 +29,10 @@ describe("Eventos - Apenas Admin (e2e)", () => {
     prisma = app.get(PrismaService);
     jwtService = app.get(JwtService);
 
+    await prisma.user.deleteMany({
+      where: { email: { in: ["user@event.com", "parceiro@event.com", "admin@event.com"] } },
+    });
+
     const userComum = await prisma.user.create({
       data: {
         nome: "User Event",
@@ -35,6 +40,15 @@ describe("Eventos - Apenas Admin (e2e)", () => {
         senha: "123",
         usuario: "userevent",
         perfil: "USUARIO",
+      },
+    });
+    const userParceiro = await prisma.user.create({
+      data: {
+        nome: "Parceiro Event",
+        email: "parceiro@event.com",
+        senha: "123",
+        usuario: "parceiroevent",
+        perfil: "PARCEIRO",
       },
     });
     const userAdmin = await prisma.user.create({
@@ -47,14 +61,9 @@ describe("Eventos - Apenas Admin (e2e)", () => {
       },
     });
 
-    tokenComum = jwtService.sign({
-      sub: userComum.id,
-      perfil: userComum.perfil,
-    });
-    tokenAdmin = jwtService.sign({
-      sub: userAdmin.id,
-      perfil: userAdmin.perfil,
-    });
+    tokenComum = jwtService.sign({ sub: userComum.id, perfil: userComum.perfil });
+    tokenParceiro = jwtService.sign({ sub: userParceiro.id, perfil: userParceiro.perfil });
+    tokenAdmin = jwtService.sign({ sub: userAdmin.id, perfil: userAdmin.perfil });
   });
 
   it("1. GET /eventos - Listar publicamente (200)", () => {
@@ -71,10 +80,23 @@ describe("Eventos - Apenas Admin (e2e)", () => {
         data: new Date().toISOString(),
         local: "Praça",
       })
-      .expect(403); // O Admin Guard bloqueia!
+      .expect(403);
   });
 
-  it("3. POST /eventos - Admin cria evento com sucesso (201)", async () => {
+  it("3. POST /eventos - PARCEIRO TENTA criar evento (403)", () => {
+    return request(app.getHttpServer())
+      .post("/eventos")
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .send({
+        titulo: "Evento do Parceiro",
+        descricao: "Tentativa indevida",
+        data: new Date().toISOString(),
+        local: "Praça",
+      })
+      .expect(403);
+  });
+
+  it("4. POST /eventos - Admin cria evento com sucesso (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post("/eventos")
       .set("Authorization", `Bearer ${tokenAdmin}`)
@@ -89,14 +111,21 @@ describe("Eventos - Apenas Admin (e2e)", () => {
     eventoCriadoId = resposta.body.id;
   });
 
-  it("4. DELETE /eventos/:id - Utilizador Comum TENTA apagar (403)", () => {
+  it("5. DELETE /eventos/:id - Utilizador Comum TENTA apagar (403)", () => {
     return request(app.getHttpServer())
       .delete(`/eventos/${eventoCriadoId}`)
       .set("Authorization", `Bearer ${tokenComum}`)
       .expect(403);
   });
 
-  it("5. DELETE /eventos/:id - Admin apaga o evento (204)", () => {
+  it("6. DELETE /eventos/:id - PARCEIRO TENTA apagar (403)", () => {
+    return request(app.getHttpServer())
+      .delete(`/eventos/${eventoCriadoId}`)
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .expect(403);
+  });
+
+  it("7. DELETE /eventos/:id - Admin apaga o evento (204)", () => {
     return request(app.getHttpServer())
       .delete(`/eventos/${eventoCriadoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
@@ -105,7 +134,7 @@ describe("Eventos - Apenas Admin (e2e)", () => {
 
   afterAll(async () => {
     await prisma.user.deleteMany({
-      where: { email: { in: ["user@event.com", "admin@event.com"] } },
+      where: { email: { in: ["user@event.com", "parceiro@event.com", "admin@event.com"] } },
     });
     await app.close();
   });

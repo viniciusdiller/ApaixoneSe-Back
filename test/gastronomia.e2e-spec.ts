@@ -12,15 +12,16 @@ describe("Gastronomia - CRUD e Permissões (e2e)", () => {
   let prisma: PrismaService;
   let jwtService: JwtService;
 
-  // Variáveis para os tokens
   let tokenDono: string;
   let tokenAdmin: string;
-  let tokenInvasor: string; // 🕵️‍♂️ NOVO: O Token do utilizador malicioso
+  let tokenInvasor: string;
+  let tokenParceiro: string; // 🤝 Parceiro: usuário aprovado com estabelecimento próprio
   let restauranteCriadoId: string;
+  let restauranteParceiroId: string;
 
   const cnpjTeste = `CNPJ-${Date.now()}`;
+  const cnpjParceiro = `CNPJ-PARC-${Date.now()}`;
 
-  // BUFFERS MÁGICOS
   const bufferImagem = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
     "base64",
@@ -44,7 +45,19 @@ describe("Gastronomia - CRUD e Permissões (e2e)", () => {
     prisma = app.get(PrismaService);
     jwtService = app.get(JwtService);
 
-    // 1. CRIAR OS 3 UTILIZADORES NA BASE DE DADOS
+    await prisma.user.deleteMany({
+      where: {
+        email: {
+          in: [
+            "dono@teste.com",
+            "admin@teste.com",
+            "invasor@teste.com",
+            "parceiro@gastro.com",
+          ],
+        },
+      },
+    });
+
     const userDono = await prisma.user.create({
       data: {
         nome: "Dono Teste",
@@ -63,7 +76,6 @@ describe("Gastronomia - CRUD e Permissões (e2e)", () => {
         perfil: "ADMIN",
       },
     });
-    // 🕵️‍♂️ NOVO: Criando o usuário Invasor (um usuário comum qualquer)
     const userInvasor = await prisma.user.create({
       data: {
         nome: "Invasor Teste",
@@ -73,17 +85,21 @@ describe("Gastronomia - CRUD e Permissões (e2e)", () => {
         perfil: "USUARIO",
       },
     });
-
-    // 2. FORJAR OS TOKENS
-    tokenDono = jwtService.sign({ sub: userDono.id, perfil: userDono.perfil });
-    tokenAdmin = jwtService.sign({
-      sub: userAdmin.id,
-      perfil: userAdmin.perfil,
+    // 🤝 PARCEIRO: usuário com perfil já promovido
+    const userParceiro = await prisma.user.create({
+      data: {
+        nome: "Parceiro Gastro",
+        email: "parceiro@gastro.com",
+        senha: "123",
+        usuario: "parceirogastro",
+        perfil: "PARCEIRO",
+      },
     });
-    tokenInvasor = jwtService.sign({
-      sub: userInvasor.id,
-      perfil: userInvasor.perfil,
-    }); // 🕵️‍♂️ NOVO
+
+    tokenDono = jwtService.sign({ sub: userDono.id, perfil: userDono.perfil });
+    tokenAdmin = jwtService.sign({ sub: userAdmin.id, perfil: userAdmin.perfil });
+    tokenInvasor = jwtService.sign({ sub: userInvasor.id, perfil: userInvasor.perfil });
+    tokenParceiro = jwtService.sign({ sub: userParceiro.id, perfil: userParceiro.perfil });
   });
 
   // =========================================================
@@ -124,30 +140,83 @@ describe("Gastronomia - CRUD e Permissões (e2e)", () => {
     expect(resposta.body.status).toBe("PENDENTE");
   });
 
+  it("5. POST /gastronomia - PARCEIRO pode criar seu próprio restaurante (201 Created)", async () => {
+    const resposta = await request(app.getHttpServer())
+      .post("/gastronomia")
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .field("nome", "Restaurante do Parceiro")
+      .field("telefone", "888888888")
+      .field("endereco", "Rua Parceiro, 456")
+      .field("cnpj", cnpjParceiro)
+      .field("responsavelNome", "Parceiro")
+      .field("responsavelCpf", "99988877766")
+      .attach("logo", bufferImagem, "logo.png")
+      .attach("documentoPdf", bufferPdf, "doc.pdf")
+      .expect(201);
+
+    restauranteParceiroId = resposta.body.id;
+    expect(resposta.body.status).toBe("PENDENTE");
+  });
+
   // =========================================================
-  // NOVOS TESTES DE SEGURANÇA (O INVASOR EM AÇÃO)
+  // TESTES DE SEGURANÇA — INVASOR
   // =========================================================
 
-  it("5. PUT /gastronomia/:id - O INVASOR tenta editar o telefone do restaurante de outro (403 Forbidden)", () => {
+  it("6. PUT /gastronomia/:id - O INVASOR tenta editar o restaurante do Dono (403 Forbidden)", () => {
     return request(app.getHttpServer())
       .put(`/gastronomia/${restauranteCriadoId}`)
-      .set("Authorization", `Bearer ${tokenInvasor}`) // Usando o token do invasor!
-      .field("telefone", "000000000") // Tentando alterar os dados do verdadeiro dono
+      .set("Authorization", `Bearer ${tokenInvasor}`)
+      .field("telefone", "000000000")
       .expect(403);
   });
 
-  it("6. DELETE /gastronomia/:id - O INVASOR tenta apagar o restaurante de outro (403 Forbidden)", () => {
+  it("7. DELETE /gastronomia/:id - O INVASOR tenta apagar o restaurante do Dono (403 Forbidden)", () => {
     return request(app.getHttpServer())
       .delete(`/gastronomia/${restauranteCriadoId}`)
-      .set("Authorization", `Bearer ${tokenInvasor}`) // Usando o token do invasor!
+      .set("Authorization", `Bearer ${tokenInvasor}`)
       .expect(403);
+  });
+
+  // =========================================================
+  // TESTES DE SEGURANÇA — PARCEIRO
+  // =========================================================
+
+  it("8. PUT /gastronomia/:id - PARCEIRO tenta editar o restaurante do Dono (403 Forbidden)", () => {
+    return request(app.getHttpServer())
+      .put(`/gastronomia/${restauranteCriadoId}`)
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .field("telefone", "111111111")
+      .expect(403);
+  });
+
+  it("9. DELETE /gastronomia/:id - PARCEIRO tenta apagar o restaurante do Dono (403 Forbidden)", () => {
+    return request(app.getHttpServer())
+      .delete(`/gastronomia/${restauranteCriadoId}`)
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .expect(403);
+  });
+
+  it("10. PUT /gastronomia/:id - PARCEIRO tenta aprovar o próprio restaurante (403 Forbidden)", () => {
+    return request(app.getHttpServer())
+      .put(`/gastronomia/${restauranteParceiroId}`)
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .field("status", "APROVADO")
+      .expect(403);
+  });
+
+  it("11. PUT /gastronomia/:id - PARCEIRO pode editar seu próprio restaurante (telefone) (200 OK)", () => {
+    return request(app.getHttpServer())
+      .put(`/gastronomia/${restauranteParceiroId}`)
+      .set("Authorization", `Bearer ${tokenParceiro}`)
+      .field("telefone", "777777777")
+      .expect(200);
   });
 
   // =========================================================
   // CONTINUAÇÃO DOS TESTES ORIGINAIS
   // =========================================================
 
-  it("7. PUT /gastronomia/:id - O Dono TENTA APROVAR o próprio restaurante (403 Forbidden)", () => {
+  it("12. PUT /gastronomia/:id - O Dono TENTA APROVAR o próprio restaurante (403 Forbidden)", () => {
     return request(app.getHttpServer())
       .put(`/gastronomia/${restauranteCriadoId}`)
       .set("Authorization", `Bearer ${tokenDono}`)
@@ -155,7 +224,7 @@ describe("Gastronomia - CRUD e Permissões (e2e)", () => {
       .expect(403);
   });
 
-  it("8. PUT /gastronomia/:id - O ADMIN APROVA o restaurante (200 OK)", async () => {
+  it("13. PUT /gastronomia/:id - O ADMIN APROVA o restaurante do Dono (200 OK)", async () => {
     const resposta = await request(app.getHttpServer())
       .put(`/gastronomia/${restauranteCriadoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
@@ -165,7 +234,14 @@ describe("Gastronomia - CRUD e Permissões (e2e)", () => {
     expect(resposta.body.status).toBe("APROVADO");
   });
 
-  it("9. DELETE /gastronomia/:id - O ADMIN APAGA o restaurante (204 No Content)", () => {
+  it("14. DELETE /gastronomia/:id - O ADMIN APAGA o restaurante do Parceiro (204 No Content)", () => {
+    return request(app.getHttpServer())
+      .delete(`/gastronomia/${restauranteParceiroId}`)
+      .set("Authorization", `Bearer ${tokenAdmin}`)
+      .expect(204);
+  });
+
+  it("15. DELETE /gastronomia/:id - O ADMIN APAGA o restaurante do Dono (204 No Content)", () => {
     return request(app.getHttpServer())
       .delete(`/gastronomia/${restauranteCriadoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
@@ -177,21 +253,20 @@ describe("Gastronomia - CRUD e Permissões (e2e)", () => {
   // =========================================================
 
   afterAll(async () => {
-    // Apagamos os 3 utilizadores de teste
     await prisma.user.deleteMany({
       where: {
         email: {
-          in: ["dono@teste.com", "admin@teste.com", "invasor@teste.com"],
+          in: [
+            "dono@teste.com",
+            "admin@teste.com",
+            "invasor@teste.com",
+            "parceiro@gastro.com",
+          ],
         },
       },
     });
 
-    const pastaFisica = path.join(
-      ".",
-      "uploads",
-      "Gastronomia",
-      "restaurante_e2e",
-    );
+    const pastaFisica = path.join(".", "uploads", "Gastronomia", "restaurante_e2e");
     if (fs.existsSync(pastaFisica)) {
       fs.rmSync(pastaFisica, { recursive: true, force: true });
     }

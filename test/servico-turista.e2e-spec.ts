@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import { AppModule } from "./../src/app.module";
 import { PrismaService } from "./../src/data/providers/db/prisma.Service";
-import { JwtService, JwtModule } from "@nestjs/jwt";
+import { JwtService, JwtModule } from "@nextjs/jwt";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -16,7 +16,6 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
   let tokenAdmin: string;
   let tokenInvasor: string;
   let servicoCriadoId: string;
-  let donoId: string;
 
   const bufferImagem = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
@@ -76,7 +75,6 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       },
     });
 
-    donoId = userDono.id;
     tokenDono = jwtService.sign({ sub: userDono.id, perfil: userDono.perfil });
     tokenAdmin = jwtService.sign({ sub: userAdmin.id, perfil: userAdmin.perfil });
     tokenInvasor = jwtService.sign({ sub: userInvasor.id, perfil: userInvasor.perfil });
@@ -90,34 +88,44 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     return request(app.getHttpServer())
       .post("/servico-turista")
       .field("nome", "Agência Sem Token")
+      .field("telefone", "999999999")
       .field("tipo", "AGENCIA_TURISMO")
+      .field("descricao", "Sem token")
       .attach("logo", bufferImagem, "logo.png")
+      .attach("comprovante", bufferImagem, "comprovante.png")
       .expect(401);
   });
 
-  // AGENCIA_TURISMO exige logo — enviar 'foto' ao invés de 'logo' deve retornar 400
-  it("3. POST /servico-turista - Agência sem Logo deve falhar (400)", () => {
+  // GUIA_TURISMO exige: foto (não logo), cnpj, roteiro, idiomas
+  it("3. POST /servico-turista - Guia sem foto deve falhar (400)", () => {
     return request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
-      .field("nome", "Agência Bugada")
-      .field("tipo", "AGENCIA_TURISMO")
-      .attach("foto", bufferImagem, "foto.png")
+      .field("nome", "Guia Bugado")
+      .field("telefone", "999999999")
+      .field("tipo", "GUIA_TURISMO")
+      .field("cnpj", "00.000.000/0001-00")
+      .field("roteiro", "CULTURAL")
+      .field("idiomas", "Português")
+      // não envia 'foto' — deve retornar 400
       .expect(400);
   });
 
-  // AGENCIA_TURISMO exige logo + comprovante — sem comprovante deve retornar 400
+  // AGENCIA_TURISMO exige: logo + comprovante + descricao
   it("4. POST /servico-turista - Agência sem comprovante deve falhar (400)", () => {
     return request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
       .field("nome", "Agência Sem Comprovante")
+      .field("telefone", "999999999")
       .field("tipo", "AGENCIA_TURISMO")
+      .field("descricao", "Agência sem comprovante de Cadastur")
       .attach("logo", bufferImagem, "logo.png")
+      // não envia 'comprovante' — deve retornar 400
       .expect(400);
   });
 
-  // ESPORTE_LAZER é o único tipo que não exige comprovante
+  // ESPORTE_LAZER: logo + descricao, sem comprovante
   it("5. POST /servico-turista - ESPORTE_LAZER não exige comprovante (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post("/servico-turista")
@@ -125,10 +133,11 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .field("nome", `EsporteE2E${Date.now()}`)
       .field("telefone", "999000000")
       .field("tipo", "ESPORTE_LAZER")
+      .field("descricao", "Atividades esportivas e lazer na região")
       .attach("logo", bufferImagem, "logo.png")
       .expect(201);
 
-    // Apagar este registro extra antes de continuar
+    // Limpar registro temporário
     const idTemp = resposta.body.id;
     if (idTemp) {
       await request(app.getHttpServer())
@@ -137,7 +146,7 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
     }
   });
 
-  // AGENCIA_TURISMO: logo + comprovante obrigatórios
+  // AGENCIA_TURISMO: logo + comprovante + descricao
   it("6. POST /servico-turista - Criar Agência com sucesso (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post("/servico-turista")
@@ -145,6 +154,7 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .field("nome", `AgenciaE2E${Date.now()}`)
       .field("telefone", "999999999")
       .field("tipo", "AGENCIA_TURISMO")
+      .field("descricao", "Agência de turismo local com guias especializados")
       .attach("logo", bufferImagem, "logo.png")
       .attach("comprovante", bufferImagem, "comprovante.png")
       .expect(201);

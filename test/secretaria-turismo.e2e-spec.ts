@@ -12,8 +12,8 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
   let prisma: PrismaService;
   let jwtService: JwtService;
 
-  let tokenComum: string;
   let tokenAdmin: string;
+  let tokenUsuario: string;
   let secretariaId: string;
   let turistandoId: string;
   let projetoId: string;
@@ -40,15 +40,11 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
     prisma = app.get(PrismaService);
     jwtService = app.get(JwtService);
 
-    const userComum = await prisma.user.create({
-      data: {
-        nome: "User Secretaria",
-        email: "user@secretaria.com",
-        senha: "123",
-        usuario: "usersecretaria",
-        perfil: "USUARIO",
-      },
+    // Limpar dados residuais
+    await prisma.user.deleteMany({
+      where: { email: { in: ["admin@secretaria.com", "user@secretaria.com"] } },
     });
+
     const userAdmin = await prisma.user.create({
       data: {
         nome: "Admin Secretaria",
@@ -58,29 +54,38 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
         perfil: "ADMIN",
       },
     });
+    const userComum = await prisma.user.create({
+      data: {
+        nome: "User Secretaria",
+        email: "user@secretaria.com",
+        senha: "123",
+        usuario: "usersecretaria",
+        perfil: "USUARIO",
+      },
+    });
 
-    tokenComum = jwtService.sign({ sub: userComum.id, perfil: userComum.perfil });
     tokenAdmin = jwtService.sign({ sub: userAdmin.id, perfil: userAdmin.perfil });
+    tokenUsuario = jwtService.sign({ sub: userComum.id, perfil: userComum.perfil });
   });
 
-  // ========== SECRETARIA PRINCIPAL ==========
+  // ===== SECRETARIA PRINCIPAL =====
 
-  it("1. GET /secretaria-turismo - Deve listar publicamente (200)", () => {
+  it("1. GET /secretaria-turismo - Listar (200)", () => {
     return request(app.getHttpServer()).get("/secretaria-turismo").expect(200);
   });
 
-  it("2. POST /secretaria-turismo - Sem token deve bloquear (401)", () => {
+  it("2. POST /secretaria-turismo - Sem token retorna 401", () => {
     return request(app.getHttpServer())
       .post("/secretaria-turismo")
-      .field("textoExplicativo", "Texto sem token")
+      .field("titulo", "Secretaria Sem Auth")
       .expect(401);
   });
 
-  it("3. POST /secretaria-turismo - User comum TENTA criar (403)", () => {
+  it("3. POST /secretaria-turismo - Usuário comum TENTA criar (403)", () => {
     return request(app.getHttpServer())
       .post("/secretaria-turismo")
-      .set("Authorization", `Bearer ${tokenComum}`)
-      .field("textoExplicativo", "Tentativa de invasão")
+      .set("Authorization", `Bearer ${tokenUsuario}`)
+      .field("titulo", "Tentativa de usuário")
       .expect(403);
   });
 
@@ -88,18 +93,19 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
     const resposta = await request(app.getHttpServer())
       .post("/secretaria-turismo")
       .set("Authorization", `Bearer ${tokenAdmin}`)
-      .field("textoExplicativo", "Bem-vindo à Secretaria de Turismo de Saquarema!")
+      .field("titulo", "Secretaria de Turismo de Saquarema")
+      .field("texto", "Texto institucional da secretaria")
       .expect(201);
 
     secretariaId = resposta.body.id;
     expect(secretariaId).toBeDefined();
   });
 
-  it("5. PUT /secretaria-turismo/:id - User comum TENTA alterar texto (403)", () => {
+  it("5. PUT /secretaria-turismo/:id - Usuário comum TENTA alterar texto (403)", () => {
     return request(app.getHttpServer())
       .put(`/secretaria-turismo/${secretariaId}`)
-      .set("Authorization", `Bearer ${tokenComum}`)
-      .field("textoExplicativo", "Texto invasor")
+      .set("Authorization", `Bearer ${tokenUsuario}`)
+      .field("titulo", "Invasão de usuário")
       .expect(403);
   });
 
@@ -107,71 +113,69 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
     const resposta = await request(app.getHttpServer())
       .put(`/secretaria-turismo/${secretariaId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
-      .field("textoExplicativo", "Texto institucional atualizado")
+      .field("titulo", "Secretaria Atualizada")
       .expect(200);
 
-    expect(resposta.body.textoExplicativo).toBe("Texto institucional atualizado");
+    expect(resposta.body.titulo).toBe("Secretaria Atualizada");
   });
 
-  // ========== TURISTANDO ==========
+  // ===== TURISTANDO =====
 
-  it("7. POST /secretaria-turismo/:id/turistando - User comum TENTA adicionar bloco (403)", () => {
+  it("7. POST /secretaria-turismo/:id/turistando - Usuário TENTA criar (403)", () => {
     return request(app.getHttpServer())
       .post(`/secretaria-turismo/${secretariaId}/turistando`)
-      .set("Authorization", `Bearer ${tokenComum}`)
-      .field("titulo", "Bloco invasor")
-      .field("descricao", "Tentativa")
+      .set("Authorization", `Bearer ${tokenUsuario}`)
+      .field("titulo", "Tentativa")
       .expect(403);
   });
 
-  it("8. POST /secretaria-turismo/:id/turistando - Admin adiciona bloco com imagem (201)", async () => {
+  it("8. POST /secretaria-turismo/:id/turistando - Admin cria bloco (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post(`/secretaria-turismo/${secretariaId}/turistando`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
-      .field("titulo", "Praias de Saquarema")
-      .field("descricao", "As melhores praias da região")
-      .attach("imagens", bufferImagem, "praia.png")
+      .field("titulo", "Passeio à Lagoa de Saquarema")
+      .field("texto", "Descrição do passeio")
+      .attach("imagens", bufferImagem, "passeio.png")
       .expect(201);
 
     turistandoId = resposta.body.id;
     expect(turistandoId).toBeDefined();
   });
 
-  it("9. PUT /secretaria-turismo/turistando/:id - User comum TENTA editar bloco (403)", () => {
+  it("9. PUT /secretaria-turismo/turistando/:id - Usuário TENTA alterar (403)", () => {
     return request(app.getHttpServer())
       .put(`/secretaria-turismo/turistando/${turistandoId}`)
-      .set("Authorization", `Bearer ${tokenComum}`)
-      .field("titulo", "Título invasor")
+      .set("Authorization", `Bearer ${tokenUsuario}`)
+      .field("titulo", "Invasão")
       .expect(403);
   });
 
-  it("10. PUT /secretaria-turismo/turistando/:id - Admin edita bloco (200)", async () => {
+  it("10. PUT /secretaria-turismo/turistando/:id - Admin atualiza (200)", async () => {
     const resposta = await request(app.getHttpServer())
       .put(`/secretaria-turismo/turistando/${turistandoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
-      .field("titulo", "Praias Atualizadas")
+      .field("titulo", "Passeio Atualizado")
       .expect(200);
 
-    expect(resposta.body.titulo).toBe("Praias Atualizadas");
+    expect(resposta.body.titulo).toBe("Passeio Atualizado");
   });
 
-  // ========== PROJETOS ==========
+  // ===== PROJETOS =====
 
-  it("11. POST /secretaria-turismo/:id/projeto - User comum TENTA adicionar projeto (403)", () => {
+  it("11. POST /secretaria-turismo/:id/projeto - Usuário TENTA criar (403)", () => {
     return request(app.getHttpServer())
       .post(`/secretaria-turismo/${secretariaId}/projeto`)
-      .set("Authorization", `Bearer ${tokenComum}`)
-      .field("titulo", "Projeto invasor")
-      .field("descricao", "Tentativa")
+      .set("Authorization", `Bearer ${tokenUsuario}`)
+      .field("titulo", "Projeto Invasor")
       .expect(403);
   });
 
-  it("12. POST /secretaria-turismo/:id/projeto - Admin adiciona projeto com imagem (201)", async () => {
+  it("12. POST /secretaria-turismo/:id/projeto - Admin cria projeto (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post(`/secretaria-turismo/${secretariaId}/projeto`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
-      .field("titulo", "Curso de Guia")
-      .field("descricao", "Capacitação para guias de turismo")
+      .field("titulo", "Projeto Turismo Sustentável")
+      .field("texto", "Descrição do projeto")
       .attach("imagem", bufferImagem, "projeto.png")
       .expect(201);
 
@@ -179,48 +183,55 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
     expect(projetoId).toBeDefined();
   });
 
-  it("13. PUT /secretaria-turismo/projeto/:id - User comum TENTA editar projeto (403)", () => {
+  it("13. PUT /secretaria-turismo/projeto/:id - Usuário TENTA alterar (403)", () => {
     return request(app.getHttpServer())
       .put(`/secretaria-turismo/projeto/${projetoId}`)
-      .set("Authorization", `Bearer ${tokenComum}`)
-      .field("titulo", "Título invasor")
+      .set("Authorization", `Bearer ${tokenUsuario}`)
+      .field("titulo", "Invasão")
       .expect(403);
   });
 
-  it("14. PUT /secretaria-turismo/projeto/:id - Admin edita projeto (200)", async () => {
+  it("14. PUT /secretaria-turismo/projeto/:id - Admin atualiza (200)", async () => {
     const resposta = await request(app.getHttpServer())
       .put(`/secretaria-turismo/projeto/${projetoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
-      .field("titulo", "Curso de Guia Atualizado")
+      .field("titulo", "Projeto Atualizado")
       .expect(200);
 
-    expect(resposta.body.titulo).toBe("Curso de Guia Atualizado");
+    expect(resposta.body.titulo).toBe("Projeto Atualizado");
   });
 
-  // ========== LIMPEZA ==========
+  // ===== DELEÇÕES =====
 
-  it("15. DELETE /secretaria-turismo/turistando/:id - Admin apaga bloco (204)", () => {
+  it("15. DELETE /secretaria-turismo/turistando/:id - Usuário TENTA deletar (403)", () => {
+    return request(app.getHttpServer())
+      .delete(`/secretaria-turismo/turistando/${turistandoId}`)
+      .set("Authorization", `Bearer ${tokenUsuario}`)
+      .expect(403);
+  });
+
+  it("16. DELETE /secretaria-turismo/turistando/:id - Admin deleta (204)", () => {
     return request(app.getHttpServer())
       .delete(`/secretaria-turismo/turistando/${turistandoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
       .expect(204);
   });
 
-  it("16. DELETE /secretaria-turismo/projeto/:id - Admin apaga projeto (204)", () => {
+  it("17. DELETE /secretaria-turismo/projeto/:id - Admin deleta projeto (204)", () => {
     return request(app.getHttpServer())
       .delete(`/secretaria-turismo/projeto/${projetoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
       .expect(204);
   });
 
-  it("17. DELETE /secretaria-turismo/:id - User comum TENTA apagar secretaria (403)", () => {
+  it("18. DELETE /secretaria-turismo/:id - Usuário TENTA deletar secretaria (403)", () => {
     return request(app.getHttpServer())
       .delete(`/secretaria-turismo/${secretariaId}`)
-      .set("Authorization", `Bearer ${tokenComum}`)
+      .set("Authorization", `Bearer ${tokenUsuario}`)
       .expect(403);
   });
 
-  it("18. DELETE /secretaria-turismo/:id - Admin apaga secretaria (204)", () => {
+  it("19. DELETE /secretaria-turismo/:id - Admin deleta secretaria (204)", () => {
     return request(app.getHttpServer())
       .delete(`/secretaria-turismo/${secretariaId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
@@ -229,11 +240,13 @@ describe("Secretaria de Turismo - CRUD e Permissões (e2e)", () => {
 
   afterAll(async () => {
     await prisma.user.deleteMany({
-      where: { email: { in: ["user@secretaria.com", "admin@secretaria.com"] } },
+      where: { email: { in: ["admin@secretaria.com", "user@secretaria.com"] } },
     });
+
     const pastaSecretaria = path.join(".", "uploads", "secretaria");
     if (fs.existsSync(pastaSecretaria))
       fs.rmSync(pastaSecretaria, { recursive: true, force: true });
+
     await app.close();
   });
 });

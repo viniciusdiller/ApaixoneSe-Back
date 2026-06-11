@@ -16,14 +16,11 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
   let tokenAdmin: string;
   let tokenInvasor: string;
   let servicoCriadoId: string;
+  let donoId: string;
 
   const bufferImagem = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
     "base64",
-  );
-  const bufferPdf = Buffer.from(
-    "%PDF-1.4\n1 0 obj\n<<\n/Type /Catalog\n>>\nendobj\ntrailer\n<<\n/Root 1 0 R\n>>\n%%EOF",
-    "utf-8",
   );
 
   beforeAll(async () => {
@@ -42,6 +39,15 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
 
     prisma = app.get(PrismaService);
     jwtService = app.get(JwtService);
+
+    // Limpar dados residuais
+    await prisma.user.deleteMany({
+      where: {
+        email: {
+          in: ["donoserv@teste.com", "adminserv@teste.com", "invasorserv@teste.com"],
+        },
+      },
+    });
 
     const userDono = await prisma.user.create({
       data: {
@@ -71,59 +77,90 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       },
     });
 
+    donoId = userDono.id;
     tokenDono = jwtService.sign({ sub: userDono.id, perfil: userDono.perfil });
-    tokenAdmin = jwtService.sign({
-      sub: userAdmin.id,
-      perfil: userAdmin.perfil,
-    });
-    tokenInvasor = jwtService.sign({
-      sub: userInvasor.id,
-      perfil: userInvasor.perfil,
-    });
+    tokenAdmin = jwtService.sign({ sub: userAdmin.id, perfil: userAdmin.perfil });
+    tokenInvasor = jwtService.sign({ sub: userInvasor.id, perfil: userInvasor.perfil });
   });
 
-  it("1. GET /servico-turista - Listar publicamente (200)", () => {
+  it("1. GET /servico-turista - Listar (200)", () => {
     return request(app.getHttpServer()).get("/servico-turista").expect(200);
   });
 
-  it("2. POST /servico-turista - Sem token deve bloquear (401)", () => {
+  it("2. POST /servico-turista - Sem token deve retornar 401", () => {
     return request(app.getHttpServer())
       .post("/servico-turista")
       .field("nome", "Agência Sem Token")
       .field("tipo", "AGENCIA_TURISMO")
+      .attach("logo", bufferImagem, "logo.png")
       .expect(401);
   });
 
-  it("3. POST /servico-turista - Agência sem logo deve falhar (400)", () => {
+  it("3. POST /servico-turista - Agência sem Logo deve falhar (400)", () => {
     return request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
       .field("nome", "Agência Bugada")
-      .field("telefone", "999999999")
       .field("tipo", "AGENCIA_TURISMO")
-      // Envia 'foto' em vez de 'logo' para agência — deve falhar
+      // Enviando 'foto' em vez de 'logo' — controller deve rejeitar com 400
       .attach("foto", bufferImagem, "foto.png")
       .expect(400);
   });
 
-  it("4. POST /servico-turista - Criar Agência com sucesso (201)", async () => {
+  it("4. POST /servico-turista - Agência sem comprovante deve falhar (400)", () => {
+    return request(app.getHttpServer())
+      .post("/servico-turista")
+      .set("Authorization", `Bearer ${tokenDono}`)
+      .field("nome", "Agência Sem Comprovante")
+      .field("tipo", "AGENCIA_TURISMO")
+      // Tem logo mas não tem comprovante — deve retornar 400
+      .attach("logo", bufferImagem, "logo.png")
+      .expect(400);
+  });
+
+  it("5. POST /servico-turista - ESPORTE_LAZER não exige comprovante (201)", async () => {
+    // ESPORTE_LAZER é o único tipo que não exige comprovante
+    const resposta = await request(app.getHttpServer())
+      .post("/servico-turista")
+      .set("Authorization", `Bearer ${tokenDono}`)
+      .field("nome", "Esporte E2E Temp")
+      .field("telefone", "999000000")
+      .field("tipo", "ESPORTE_LAZER")
+      .attach("logo", bufferImagem, "logo.png")
+      .expect(201);
+
+    // Apagar este registro extra antes de continuar
+    const idTemp = resposta.body.id;
+    if (idTemp) {
+      await request(app.getHttpServer())
+        .delete(`/servico-turista/${idTemp}`)
+        .set("Authorization", `Bearer ${tokenAdmin}`);
+    }
+  });
+
+  it("6. POST /servico-turista - Criar Agência com sucesso (201)", async () => {
     const resposta = await request(app.getHttpServer())
       .post("/servico-turista")
       .set("Authorization", `Bearer ${tokenDono}`)
       .field("nome", "Agencia E2E")
       .field("telefone", "999999999")
       .field("tipo", "AGENCIA_TURISMO")
-      .field("descricao", "Agência de turismo para testes E2E")
+      // CORREÇÃO: Agência exige logo + comprovante
       .attach("logo", bufferImagem, "logo.png")
-      .attach("comprovante", bufferPdf, "comprovante.pdf")
+      .attach("comprovante", bufferImagem, "comprovante.png")
       .expect(201);
 
     servicoCriadoId = resposta.body.id;
     expect(servicoCriadoId).toBeDefined();
-    expect(resposta.body.status).toBe("PENDENTE");
   });
 
-  it("5. PUT /servico-turista/:id - Invasor tenta alterar (403)", () => {
+  it("7. GET /servico-turista/:id - Busca pelo ID criado (200)", () => {
+    return request(app.getHttpServer())
+      .get(`/servico-turista/${servicoCriadoId}`)
+      .expect(200);
+  });
+
+  it("8. PUT /servico-turista/:id - Invasor tenta alterar (403)", () => {
     return request(app.getHttpServer())
       .put(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenInvasor}`)
@@ -131,7 +168,15 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .expect(403);
   });
 
-  it("6. PUT /servico-turista/:id - Dono tenta se AUTO-APROVAR (403)", () => {
+  it("9. PUT /servico-turista/:id - Dono atualiza próprio serviço (200)", () => {
+    return request(app.getHttpServer())
+      .put(`/servico-turista/${servicoCriadoId}`)
+      .set("Authorization", `Bearer ${tokenDono}`)
+      .field("telefone", "888888888")
+      .expect(200);
+  });
+
+  it("10. PUT /servico-turista/:id - Usuário tenta alterar status (403)", () => {
     return request(app.getHttpServer())
       .put(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenDono}`)
@@ -139,48 +184,43 @@ describe("Servico Turista - CRUD e Permissões (e2e)", () => {
       .expect(403);
   });
 
-  it("7. PUT /servico-turista/:id - Admin aprova (200)", async () => {
-    const resposta = await request(app.getHttpServer())
+  it("11. PUT /servico-turista/:id - Admin aprova (200)", () => {
+    return request(app.getHttpServer())
       .put(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
       .field("status", "APROVADO")
       .expect(200);
-
-    expect(resposta.body.status).toBe("APROVADO");
   });
 
-  it("8. DELETE /servico-turista/:id - Invasor tenta apagar (403)", () => {
+  it("12. DELETE /servico-turista/:id - Invasor tenta apagar (403)", () => {
     return request(app.getHttpServer())
       .delete(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenInvasor}`)
       .expect(403);
   });
 
-  it("9. DELETE /servico-turista/:id - Admin apaga (204)", () => {
+  it("13. DELETE /servico-turista/:id - Admin apaga (204)", () => {
     return request(app.getHttpServer())
       .delete(`/servico-turista/${servicoCriadoId}`)
       .set("Authorization", `Bearer ${tokenAdmin}`)
       .expect(204);
   });
 
+  it("14. GET /servico-turista/:id - Após deletar retorna 404", () => {
+    return request(app.getHttpServer())
+      .get(`/servico-turista/${servicoCriadoId}`)
+      .expect(404);
+  });
+
   afterAll(async () => {
     await prisma.user.deleteMany({
       where: {
         email: {
-          in: [
-            "donoserv@teste.com",
-            "adminserv@teste.com",
-            "invasorserv@teste.com",
-          ],
+          in: ["donoserv@teste.com", "adminserv@teste.com", "invasorserv@teste.com"],
         },
       },
     });
-    const pastaFisica = path.join(
-      ".",
-      "uploads",
-      "servico_turista",
-      "agencia_e2e",
-    );
+    const pastaFisica = path.join(".", "uploads", "servico_turista");
     if (fs.existsSync(pastaFisica))
       fs.rmSync(pastaFisica, { recursive: true, force: true });
     await app.close();

@@ -9,19 +9,21 @@ import { join } from "path";
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Aumenta o limite do body para suportar imagens em base64 (data URLs)
-  // O padrão do Express é 100kb — insuficiente para imagens. 10mb cobre a maioria dos casos.
   app.use(json({ limit: "10mb" }));
   app.use(urlencoded({ limit: "10mb", extended: true }));
 
-  // Ativa o CORS (como você tinha no app.ts)
+  // CORS: credentials:true é incompatível com origin:"*".
+  // Usar uma função que reflete a origem da requisição permite
+  // qualquer cliente (dev + produção) sem bloquear o preflight OPTIONS.
   app.enableCors({
-    origin: "*",
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    origin: (origin, callback) => callback(null, origin ?? true),
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    allowedHeaders: "Content-Type,Authorization,Accept",
     credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
-  // Ativa a validação automática dos DTOs em toda a aplicação
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -30,12 +32,10 @@ async function bootstrap() {
     }),
   );
 
-  // Isto permite que a pasta física 'uploads' seja acessível pelo navegador
   app.useStaticAssets(join(__dirname, "..", "uploads"), {
     prefix: "/uploads/",
   });
 
-  // Configuração automatizada do Swagger
   const config = new DocumentBuilder()
     .setTitle("Apaixone-Se API")
     .setVersion("1.0")

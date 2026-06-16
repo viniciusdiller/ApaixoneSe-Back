@@ -248,6 +248,24 @@ model Cat {
   @@map("cat")
 }
 
+// =========================================
+// CAT MÓVEL - Cartão/Card com mídia variada
+// =========================================
+model CatMovel {
+  id         String   @id @default(uuid())
+  titulo     String
+  descricao  String   @db.Text
+
+  // Mídia: pode ser uma imagem OU um vídeo (mutuamente exclusivos)
+  imagemUrl  String?  // Caminho da imagem salva no servidor
+  videoUrl   String?  // Caminho do vídeo salvo no servidor
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("cat_movel")
+}
+
 model CasaDeCambio {
   id        String @id @default(uuid())
   nome      String

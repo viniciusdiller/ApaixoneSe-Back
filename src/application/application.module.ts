@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { PassportModule } from "@nestjs/passport";
 import { DataModule } from "../data/data.module";
 import { UserApplication } from "./applications/user.Application";
 import { GastronomiaApplication } from "./applications/gastronomia.Application";
@@ -14,10 +15,15 @@ import { CatApplication } from "./applications/cat.Application";
 import { CatMovelApplication } from "./applications/catMovel.Application";
 import { CasaDeCambioApplication } from "./applications/casaDeCambio.Application";
 import { SecretariaTurismoApplication } from "./applications/secretariaTurismo.Application";
+import { JwtStrategy } from "./strategies/jwt.strategy";
 
 @Module({
-  imports: [DataModule],
+  imports: [
+    DataModule,
+    PassportModule.register({ defaultStrategy: "jwt" }), // Registra a estratégia JWT globalmente
+  ],
   providers: [
+    JwtStrategy, // Ensina o Passport o que fazer quando receber um token
     UserApplication,
     GastronomiaApplication,
     HospedagemApplication,

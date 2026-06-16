@@ -266,6 +266,24 @@ model CatMovel {
   @@map("cat_movel")
 }
 
+// =========================================
+// FIQUE POR DENTRO - Galeria de até 5 imagens
+// =========================================
+model FiquePorDentro {
+  id        String   @id @default(uuid())
+
+  // Posição real da imagem: "1", "2", "3", "4" ou "5"
+  // @unique garante que não existam duas imagens na mesma posição
+  ordem     String   @unique
+
+  imagemUrl String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("fique_por_dentro")
+}
+
 model CasaDeCambio {
   id        String @id @default(uuid())
   nome      String

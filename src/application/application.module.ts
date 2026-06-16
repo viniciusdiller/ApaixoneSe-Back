@@ -1,54 +1,53 @@
 import { Module } from "@nestjs/common";
 import { DataModule } from "../data/data.module";
 import { UserApplication } from "./applications/user.Application";
-import { UserRepository } from "../data/repositories/user.repository";
-import { AtividadeApplication } from "./applications/atividade.Application";
-import { EventoApplication } from "./applications/evento.Application";
 import { GastronomiaApplication } from "./applications/gastronomia.Application";
+import { HospedagemApplication } from "./applications/hospedagem.Application";
 import { ServicoTuristaApplication } from "./applications/servicoTurista.Application";
-import { CatApplication } from "./applications/cat.Application";
+import { EventoApplication } from "./applications/evento.Application";
+import { EventoPrincipalApplication } from "./applications/eventoPrincipal.Application";
+import { AtividadeApplication } from "./applications/atividade.Application";
 import { PlanoViagemApplication } from "./applications/planoViagem.Application";
 import { ItemPlanoViagemApplication } from "./applications/itemPlanoViagem.Application";
 import { VisitaApplication } from "./applications/visita.Application";
-import { EventoPrincipalApplication } from "./applications/eventoPrincipal.Application";
+import { CatApplication } from "./applications/cat.Application";
+import { CatMovelApplication } from "./applications/catMovel.Application";
 import { CasaDeCambioApplication } from "./applications/casaDeCambio.Application";
-import { HospedagemApplication } from "./applications/hospedagem.Application";
 import { SecretariaTurismoApplication } from "./applications/secretariaTurismo.Application";
-import { JwtStrategy } from "./strategies/jwt.strategy";
 
 @Module({
-  imports: [DataModule], // Precisa do banco de dados
+  imports: [DataModule],
   providers: [
     UserApplication,
-    AtividadeApplication,
-    EventoApplication,
     GastronomiaApplication,
-    UserRepository,
-    JwtStrategy,
     HospedagemApplication,
     ServicoTuristaApplication,
-    CatApplication,
+    EventoApplication,
+    EventoPrincipalApplication,
+    AtividadeApplication,
     PlanoViagemApplication,
     ItemPlanoViagemApplication,
     VisitaApplication,
-    EventoPrincipalApplication,
+    CatApplication,
+    CatMovelApplication,
     CasaDeCambioApplication,
     SecretariaTurismoApplication,
   ],
   exports: [
     UserApplication,
-    AtividadeApplication,
-    EventoApplication,
     GastronomiaApplication,
     HospedagemApplication,
     ServicoTuristaApplication,
-    CatApplication,
+    EventoApplication,
+    EventoPrincipalApplication,
+    AtividadeApplication,
     PlanoViagemApplication,
     ItemPlanoViagemApplication,
     VisitaApplication,
-    EventoPrincipalApplication,
+    CatApplication,
+    CatMovelApplication,
     CasaDeCambioApplication,
     SecretariaTurismoApplication,
-  ], // Libera a ponte para o Controller usar
+  ],
 })
 export class ApplicationModule {}

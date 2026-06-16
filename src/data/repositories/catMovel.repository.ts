@@ -19,15 +19,9 @@ export class CatMovelRepository implements ICatMovelRepository {
     return new CatMovel(criado);
   }
 
-  async findAll(): Promise<CatMovel[]> {
-    const lista = await this.prisma.catMovel.findMany({
-      orderBy: { createdAt: "desc" },
-    });
-    return lista.map((c) => new CatMovel(c));
-  }
-
-  async findById(id: string): Promise<CatMovel | null> {
-    const c = await this.prisma.catMovel.findUnique({ where: { id } });
+  // Busca o primeiro (e único) registro da tabela
+  async findFirst(): Promise<CatMovel | null> {
+    const c = await this.prisma.catMovel.findFirst();
     if (!c) return null;
     return new CatMovel(c);
   }
@@ -38,9 +32,5 @@ export class CatMovelRepository implements ICatMovelRepository {
       data,
     });
     return new CatMovel(atualizado);
-  }
-
-  async delete(id: string): Promise<void> {
-    await this.prisma.catMovel.delete({ where: { id } });
   }
 }

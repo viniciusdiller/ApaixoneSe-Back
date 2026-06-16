@@ -10,6 +10,7 @@ import {
   Req,
   UseGuards,
   BadRequestException,
+  HttpCode,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import {
@@ -52,7 +53,7 @@ export class FiquePorDentroController {
   ) {
     if (!file) {
       throw new BadRequestException(
-        "É obrigatório enviar uma imagem no campo \"imagem\".",
+        'É obrigatório enviar uma imagem no campo "imagem".',
       );
     }
 
@@ -75,6 +76,7 @@ export class FiquePorDentroController {
   // DELETE /fique-por-dentro/:id  →  Remove UMA imagem pelo ID (ADMIN)
   // ──────────────────────────────────────────────────────────────────────────
   @Delete(":id")
+  @HttpCode(204)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
@@ -95,7 +97,6 @@ export class FiquePorDentroController {
     const uploadDir = `./uploads/fique-por-dentro`;
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-    // Nome do arquivo usa a ordem para facilitar identificação: "imagem_1_timestamp.webp"
     const nomeImagem = `imagem_${ordem}_${Date.now()}.webp`;
     await sharp(file.buffer)
       .resize(800)

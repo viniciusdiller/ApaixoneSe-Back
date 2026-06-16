@@ -14,41 +14,29 @@ import { CatRepository } from "./repositories/cat.repository";
 import { CatMovelRepository } from "./repositories/catMovel.repository";
 import { CasaDeCambioRepository } from "./repositories/casaDeCambio.repository";
 import { SecretariaTurismoRepository } from "./repositories/secretariaTurismo.repository";
+import { FiquePorDentroRepository } from "./repositories/fiquePorDentro.repository";
+
+const repositories = [
+  PrismaService,
+  UserRepository,
+  GastronomiaRepository,
+  HospedagemRepository,
+  ServicoTuristaRepository,
+  EventoRepository,
+  EventoPrincipalRepository,
+  AtividadeRepository,
+  PlanoViagemRepository,
+  ItemPlanoViagemRepository,
+  VisitaRepository,
+  CatRepository,
+  CatMovelRepository,
+  CasaDeCambioRepository,
+  SecretariaTurismoRepository,
+  FiquePorDentroRepository,
+];
 
 @Module({
-  providers: [
-    PrismaService,
-    UserRepository,
-    GastronomiaRepository,
-    HospedagemRepository,
-    ServicoTuristaRepository,
-    EventoRepository,
-    EventoPrincipalRepository,
-    AtividadeRepository,
-    PlanoViagemRepository,
-    ItemPlanoViagemRepository,
-    VisitaRepository,
-    CatRepository,
-    CatMovelRepository,
-    CasaDeCambioRepository,
-    SecretariaTurismoRepository,
-  ],
-  exports: [
-    PrismaService,
-    UserRepository,
-    GastronomiaRepository,
-    HospedagemRepository,
-    ServicoTuristaRepository,
-    EventoRepository,
-    EventoPrincipalRepository,
-    AtividadeRepository,
-    PlanoViagemRepository,
-    ItemPlanoViagemRepository,
-    VisitaRepository,
-    CatRepository,
-    CatMovelRepository,
-    CasaDeCambioRepository,
-    SecretariaTurismoRepository,
-  ],
+  providers: repositories,
+  exports: repositories,
 })
 export class DataModule {}

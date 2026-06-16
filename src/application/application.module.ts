@@ -15,15 +15,16 @@ import { CatApplication } from "./applications/cat.Application";
 import { CatMovelApplication } from "./applications/catMovel.Application";
 import { CasaDeCambioApplication } from "./applications/casaDeCambio.Application";
 import { SecretariaTurismoApplication } from "./applications/secretariaTurismo.Application";
+import { FiquePorDentroApplication } from "./applications/fiquePorDentro.Application";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 
 @Module({
   imports: [
     DataModule,
-    PassportModule.register({ defaultStrategy: "jwt" }), // Registra a estratégia JWT globalmente
+    PassportModule.register({ defaultStrategy: "jwt" }),
   ],
   providers: [
-    JwtStrategy, // Ensina o Passport o que fazer quando receber um token
+    JwtStrategy,
     UserApplication,
     GastronomiaApplication,
     HospedagemApplication,
@@ -38,6 +39,7 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
     CatMovelApplication,
     CasaDeCambioApplication,
     SecretariaTurismoApplication,
+    FiquePorDentroApplication,
   ],
   exports: [
     UserApplication,
@@ -54,6 +56,7 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
     CatMovelApplication,
     CasaDeCambioApplication,
     SecretariaTurismoApplication,
+    FiquePorDentroApplication,
   ],
 })
 export class ApplicationModule {}

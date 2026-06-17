@@ -5,10 +5,10 @@ export class SwapFiquePorDentroRequestDto {
   @ApiProperty({ description: "ID do primeiro item" })
   @IsString()
   @IsNotEmpty()
-  idA: string;
+  idA!: string;
 
   @ApiProperty({ description: "ID do segundo item" })
   @IsString()
   @IsNotEmpty()
-  idB: string;
+  idB!: string;
 }

@@ -3,6 +3,19 @@ import { PrismaService } from "../providers/db/prisma.Service";
 import { IPlanoViagemRepository } from "../interfaces/iPlanoViagem.Interface";
 import { PlanoViagem } from "../entities/planoViagem.Entity";
 
+const itensInclude = {
+  itens: {
+    include: {
+      gastronomia: { select: { id: true, nome: true, endereco: true, logoUrl: true } },
+      hospedagem: { select: { id: true, nome: true, endereco: true, logoUrl: true } },
+      evento: { select: { id: true, titulo: true, data: true, local: true } },
+      atividade: { select: { id: true, titulo: true, local: true, roteiro: true } },
+      servicoTurista: { select: { id: true, nome: true, tipo: true, logoUrl: true } },
+    },
+    orderBy: { dataHoraAgendada: "asc" as const },
+  },
+};
+
 @Injectable()
 export class PlanoViagemRepository implements IPlanoViagemRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -19,25 +32,22 @@ export class PlanoViagemRepository implements IPlanoViagemRepository {
     return new PlanoViagem(criado);
   }
 
-  // Traz apenas os roteiros do utilizador logado!
   async findByUsuarioId(usuarioId: string): Promise<PlanoViagem[]> {
     const lista = await this.prisma.planoViagem.findMany({
       where: { usuarioId },
-      orderBy: { dataInicio: "asc" }, // Ordena da viagem mais próxima para a mais distante
+      orderBy: { dataInicio: "asc" },
+      include: itensInclude,
     });
-    return lista.map((p) => new PlanoViagem(p));
+    return lista.map((p) => new PlanoViagem(p as any));
   }
 
   async findById(id: string): Promise<PlanoViagem | null> {
     const p = await this.prisma.planoViagem.findUnique({
       where: { id },
-      include: {
-        // Quando criarmos a Parte 2, os itens vão aparecer aqui dentro magicamente
-        itens: true,
-      },
+      include: itensInclude,
     });
     if (!p) return null;
-    return new PlanoViagem(p);
+    return new PlanoViagem(p as any);
   }
 
   async update(id: string, data: Partial<PlanoViagem>): Promise<PlanoViagem> {

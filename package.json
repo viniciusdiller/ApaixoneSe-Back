@@ -8,6 +8,7 @@
     "build": "tsc --project tsconfig.json",
     "start": "node dist/main.js",
     "start:prod": "node dist/main.js",
+    "seed:admin": "ts-node --project tsconfig.json scripts/seed-admin.ts",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "keywords": [],

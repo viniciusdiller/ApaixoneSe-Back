@@ -1,22 +1,17 @@
 /**
  * seed-admin.ts
- * ─────────────────────────────────────────────────────────────
- * Cria o primeiro usuário ADMIN de forma segura, sem expor
- * endpoint público e sem hardcode de credenciais no código.
  *
- * Todas as credenciais são lidas de variáveis de ambiente:
- *   ADMIN_NOME     → nome completo
- *   ADMIN_USUARIO  → username de login
- *   ADMIN_EMAIL    → e-mail de login
- *   ADMIN_SENHA    → senha em texto puro (será hasheada aqui)
+ * Cria (ou atualiza) o usuário ADMIN inicial no banco.
+ * NUNCA coloque credenciais aqui — tudo vem do .env.
  *
- * Uso:
- *   ADMIN_NOME="Vinicius" ADMIN_USUARIO="admin" \
- *   ADMIN_EMAIL="admin@apaixonese.com" ADMIN_SENHA="SenhaForte!123" \
+ * Como rodar no VPS (dentro da pasta do backend):
  *   npm run seed:admin
  *
- * O script é IDEMPOTENTE: se o email ou o username já existir
- * no banco, apenas exibe aviso e encerra sem erros.
+ * Variáveis de ambiente necessárias no .env:
+ *   ADMIN_SEED_NOME    = "Seu Nome"
+ *   ADMIN_SEED_USUARIO = "admin"
+ *   ADMIN_SEED_EMAIL   = "admin@seudominio.com"
+ *   ADMIN_SEED_SENHA   = "UmaSenhaForte@2025"
  */
 
 import { PrismaClient } from "@prisma/client";
@@ -28,84 +23,53 @@ dotenv.config();
 const prisma = new PrismaClient();
 
 async function main() {
-  // ── 1. Ler e validar variáveis de ambiente ─────────────────
-  const nome    = process.env.ADMIN_NOME?.trim();
-  const usuario = process.env.ADMIN_USUARIO?.trim();
-  const email   = process.env.ADMIN_EMAIL?.trim();
-  const senha   = process.env.ADMIN_SENHA;
+  const nome = process.env.ADMIN_SEED_NOME;
+  const usuario = process.env.ADMIN_SEED_USUARIO;
+  const email = process.env.ADMIN_SEED_EMAIL;
+  const senha = process.env.ADMIN_SEED_SENHA;
 
-  const missing: string[] = [];
-  if (!nome)    missing.push("ADMIN_NOME");
-  if (!usuario) missing.push("ADMIN_USUARIO");
-  if (!email)   missing.push("ADMIN_EMAIL");
-  if (!senha)   missing.push("ADMIN_SENHA");
-
-  if (missing.length > 0) {
+  // Valida que todas as variáveis estão presentes
+  if (!nome || !usuario || !email || !senha) {
+    console.error("\n❌ Erro: variáveis de ambiente faltando.");
     console.error(
-      `\n❌  Variáveis de ambiente ausentes: ${missing.join(", ")}\n` +
-      `   Exemplo de uso:\n` +
-      `   ADMIN_NOME="Seu Nome" ADMIN_USUARIO="admin" ` +
-      `ADMIN_EMAIL="admin@email.com" ADMIN_SENHA="SenhaForte!" npm run seed:admin\n`
+      "   Adicione no .env: ADMIN_SEED_NOME, ADMIN_SEED_USUARIO, ADMIN_SEED_EMAIL, ADMIN_SEED_SENHA\n",
     );
     process.exit(1);
   }
 
-  // Validação mínima de e-mail
-  if (!email!.includes("@")) {
-    console.error("\n❌  ADMIN_EMAIL inválido. Deve conter @.\n");
-    process.exit(1);
-  }
+  console.log(`\n🌱 Criando admin: ${email}...`);
 
-  // Senha mínima de 8 caracteres
-  if (senha!.length < 8) {
-    console.error("\n❌  ADMIN_SENHA muito curta. Mínimo 8 caracteres.\n");
-    process.exit(1);
-  }
+  const senhaHash = await bcrypt.hash(senha, 10);
 
-  // ── 2. Verificar duplicatas (idempotência) ─────────────────
-  const emailExiste = await (prisma as any).user.findUnique({
+  // upsert: cria se não existir, atualiza se já existir (idempotente)
+  const admin = await prisma.user.upsert({
     where: { email },
-  });
-  if (emailExiste) {
-    console.warn(`\n⚠️   Usuário com e-mail "${email}" já existe. Nenhuma alteração feita.\n`);
-    return;
-  }
-
-  const usuarioExiste = await (prisma as any).user.findUnique({
-    where: { usuario },
-  });
-  if (usuarioExiste) {
-    console.warn(`\n⚠️   Username "${usuario}" já está em uso. Nenhuma alteração feita.\n`);
-    return;
-  }
-
-  // ── 3. Hash da senha (mesmo algoritmo do UserApplication) ──
-  const salt           = await bcrypt.genSalt(10);
-  const senhaCriptografada = await bcrypt.hash(senha!, salt);
-
-  // ── 4. Inserir no banco ────────────────────────────────────
-  const admin = await (prisma as any).user.create({
-    data: {
+    update: {
+      nome,
+      usuario,
+      senha: senhaHash,
+      perfil: "ADMIN",
+    },
+    create: {
       nome,
       usuario,
       email,
-      senha: senhaCriptografada,
+      senha: senhaHash,
       perfil: "ADMIN",
     },
   });
 
-  console.log(`\n✅  Admin criado com sucesso!`);
+  console.log(`✅ Admin criado/atualizado com sucesso!`);
   console.log(`   ID:      ${admin.id}`);
   console.log(`   Nome:    ${admin.nome}`);
-  console.log(`   Usuario: ${admin.usuario}`);
+  console.log(`   Usuário: ${admin.usuario}`);
   console.log(`   Email:   ${admin.email}`);
-  console.log(`   Perfil:  ${admin.perfil}`);
-  console.log(`   Em:      ${admin.createdAt}\n`);
+  console.log(`   Perfil:  ${admin.perfil}\n`);
 }
 
 main()
   .catch((e) => {
-    console.error("\n❌  Erro inesperado:", e.message ?? e, "\n");
+    console.error("\n❌ Erro ao executar o seed:", e);
     process.exit(1);
   })
   .finally(async () => {

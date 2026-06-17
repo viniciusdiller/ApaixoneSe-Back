@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Delete,
   Param,
   Body,
@@ -27,6 +28,7 @@ import * as path from "path";
 import sharp from "sharp";
 import { FiquePorDentroApplication } from "../../application/applications/fiquePorDentro.Application";
 import { CreateFiquePorDentroRequestDto } from "../dto/request/fique-por-dentro/createFiquePorDentroRequestDto";
+import { UpdateFiquePorDentroRequestDto } from "../dto/request/fique-por-dentro/updateFiquePorDentroRequestDto";
 
 @ApiTags("Fique Por Dentro")
 @Controller("fique-por-dentro")
@@ -73,6 +75,32 @@ export class FiquePorDentroController {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
+  // PUT /fique-por-dentro/:id  →  Atualiza ordem e/ou imagem (ADMIN)
+  // ──────────────────────────────────────────────────────────────────────────
+  @Put(":id")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      "Atualiza a ordem e/ou a imagem de um item existente. Se enviar uma nova imagem, a anterior é removida do disco. Apenas Admin.",
+  })
+  @ApiConsumes("multipart/form-data")
+  @ApiBody({ type: UpdateFiquePorDentroRequestDto })
+  @UseInterceptors(FileInterceptor("imagem", { storage: memoryStorage() }))
+  async update(
+    @Param("id") id: string,
+    @Body() dto: UpdateFiquePorDentroRequestDto,
+    @Req() req: any,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    let novaImagemUrl: string | undefined;
+    if (file) {
+      novaImagemUrl = await this.salvarImagem(file, dto.ordem ?? id);
+    }
+    return this.app.update(id, dto.ordem, novaImagemUrl, req.user);
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
   // DELETE /fique-por-dentro/:id  →  Remove UMA imagem pelo ID (ADMIN)
   // ──────────────────────────────────────────────────────────────────────────
   @Delete(":id")
@@ -92,12 +120,12 @@ export class FiquePorDentroController {
   // ──────────────────────────────────────────────────────────────────────────
   private async salvarImagem(
     file: Express.Multer.File,
-    ordem: string,
+    sufixo: string,
   ): Promise<string> {
     const uploadDir = `./uploads/fique-por-dentro`;
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-    const nomeImagem = `imagem_${ordem}_${Date.now()}.webp`;
+    const nomeImagem = `imagem_${sufixo}_${Date.now()}.webp`;
     await sharp(file.buffer)
       .resize(800)
       .webp({ quality: 80 })

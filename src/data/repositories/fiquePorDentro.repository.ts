@@ -17,6 +17,20 @@ export class FiquePorDentroRepository implements IFiquePorDentroRepository {
     return new FiquePorDentro(criado);
   }
 
+  async update(
+    id: string,
+    data: { ordem: string; imagemUrl: string },
+  ): Promise<FiquePorDentro> {
+    const atualizado = await this.prisma.fiquePorDentro.update({
+      where: { id },
+      data: {
+        ordem: data.ordem,
+        imagemUrl: data.imagemUrl,
+      },
+    });
+    return new FiquePorDentro(atualizado);
+  }
+
   async findAll(): Promise<FiquePorDentro[]> {
     const itens = await this.prisma.fiquePorDentro.findMany({
       orderBy: { ordem: "asc" },

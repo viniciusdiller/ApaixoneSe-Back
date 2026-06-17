@@ -60,6 +60,56 @@ export class FiquePorDentroApplication {
     return this.repo.findAll();
   }
 
+  // ─── UPDATE: atualiza ordem e/ou imagem de um item existente ────────────────
+  async update(
+    id: string,
+    novaOrdem: string | undefined,
+    novaImagemUrl: string | undefined,
+    usuarioLogado: IUsuarioLogado,
+  ): Promise<FiquePorDentro> {
+    if (usuarioLogado.perfil !== "ADMIN") {
+      throw new ForbiddenException(
+        "Apenas administradores podem editar imagens do Fique Por Dentro.",
+      );
+    }
+
+    const existente = await this.repo.findById(id);
+    if (!existente) {
+      throw new NotFoundException(`Imagem com ID "${id}" não encontrada.`);
+    }
+
+    // Valida nova ordem, se fornecida
+    if (novaOrdem !== undefined) {
+      if (!ORDENS_VALIDAS.includes(novaOrdem)) {
+        throw new BadRequestException(
+          `A ordem deve ser um dos valores: ${ORDENS_VALIDAS.join(", ")}.`,
+        );
+      }
+
+      // Verifica conflito de ordem (ignorando o próprio item)
+      if (novaOrdem !== existente.ordem) {
+        const conflito = await this.repo.findByOrdem(novaOrdem);
+        if (conflito && conflito.id !== id) {
+          throw new ConflictException(
+            `Já existe uma imagem na posição "${novaOrdem}". Delete-a antes de ocupar essa posição.`,
+          );
+        }
+      }
+    }
+
+    // Se chegou nova imagem, remove a antiga do disco
+    if (novaImagemUrl) {
+      this.removerArquivo(existente.imagemUrl);
+    }
+
+    const atualizado = await this.repo.update(id, {
+      ordem: novaOrdem ?? existente.ordem,
+      imagemUrl: novaImagemUrl ?? existente.imagemUrl,
+    });
+
+    return atualizado;
+  }
+
   // ─── DELETE: remove UMA imagem pelo ID ──────────────────────────────────────
   async delete(id: string, usuarioLogado: IUsuarioLogado): Promise<void> {
     if (usuarioLogado.perfil !== "ADMIN") {

@@ -3,32 +3,35 @@ import { PrismaService } from "../providers/db/prisma.Service";
 import { IItemPlanoViagemRepository } from "../interfaces/iItemPlanoViagem.Interface";
 import { ItemPlanoViagem } from "../entities/itemPlanoViagem.Entity";
 
+const itemPlanoInclude = {
+  gastronomia: { select: { id: true, nome: true, endereco: true, logoUrl: true } },
+  hospedagem: { select: { id: true, nome: true, endereco: true, logoUrl: true } },
+  evento: { select: { id: true, titulo: true, data: true, local: true } },
+  atividade: { select: { id: true, titulo: true, local: true, roteiro: true } },
+  servicoTurista: { select: { id: true, nome: true, tipo: true, logoUrl: true } },
+  planoViagem: { select: { id: true, titulo: true } },
+} as const;
+
 @Injectable()
 export class ItemPlanoViagemRepository implements IItemPlanoViagemRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async save(item: ItemPlanoViagem): Promise<ItemPlanoViagem> {
+  async save(item: ItemPlanoViagem): Promise<any> {
     const dadosPrisma: any = { ...item };
     if (item.dataHoraAgendada)
       dadosPrisma.dataHoraAgendada = new Date(item.dataHoraAgendada);
 
     const criado = await this.prisma.itemPlanoViagem.create({
       data: dadosPrisma,
+      include: itemPlanoInclude,
     });
-    return new ItemPlanoViagem(criado);
+    return criado;
   }
 
   async findById(id: string): Promise<any> {
     const item = await this.prisma.itemPlanoViagem.findUnique({
       where: { id },
-      include: {
-        gastronomia: true,
-        hospedagem: true,
-        evento: true,
-        atividade: true,
-        servicoTurista: true,
-        planoViagem: true,
-      },
+      include: itemPlanoInclude,
     });
     return item;
   }

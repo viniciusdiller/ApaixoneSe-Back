@@ -36,6 +36,10 @@ async function bootstrap() {
     prefix: "/uploads/",
   });
 
+  app.useStaticAssets(join(__dirname, "..", "public"), {
+    prefix: "/public/",
+  });
+
   const config = new DocumentBuilder()
     .setTitle("Apaixone-Se API")
     .setVersion("1.0")

@@ -105,6 +105,7 @@ model Eventos {
   descricao   String      @db.Text
   data        DateTime
   local       String
+  fotoUrl     String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 

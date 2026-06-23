@@ -17,6 +17,12 @@ export class EventoResponseDto {
   @ApiProperty({ example: "Parque de Exposições, Sampaio Corrêa" })
   local!: string;
 
+  @ApiProperty({
+    example: "/public/eventos/abril/saquarema_country_fest/background_1718046234123.webp",
+    required: false,
+  })
+  fotoUrl?: string;
+
   // Novo campo: o Frontend usa isso para escolher a imagem
   @ApiProperty({ enum: Mes, example: "ABRIL" })
   mes!: Mes;

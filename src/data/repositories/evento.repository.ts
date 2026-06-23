@@ -2,11 +2,34 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../providers/db/prisma.Service";
 import { IEventoRepository } from "../interfaces/iEvento.Interface";
 import { Evento } from "../entities/evento.Entity";
-import { Mes } from "@prisma/client";
 
 @Injectable()
 export class EventoRepository implements IEventoRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  private toEntity(eventoPrisma: {
+    id: string;
+    titulo: string;
+    descricao: string;
+    data: Date;
+    local: string;
+    fotoUrl: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): Evento {
+    return new Evento(
+      {
+        titulo: eventoPrisma.titulo,
+        descricao: eventoPrisma.descricao,
+        data: eventoPrisma.data,
+        local: eventoPrisma.local,
+        fotoUrl: eventoPrisma.fotoUrl ?? undefined,
+      },
+      eventoPrisma.id,
+      eventoPrisma.createdAt,
+      eventoPrisma.updatedAt,
+    );
+  }
 
   // 1. Salvar um Evento
   async save(evento: Evento): Promise<Evento> {
@@ -16,15 +39,11 @@ export class EventoRepository implements IEventoRepository {
         descricao: evento.descricao,
         data: evento.data,
         local: evento.local,
+        fotoUrl: evento.fotoUrl,
       },
     });
 
-    return new Evento(
-      eventoPrisma,
-      eventoPrisma.id,
-      eventoPrisma.createdAt,
-      eventoPrisma.updatedAt,
-    );
+    return this.toEntity(eventoPrisma);
   }
 
   // 2. Buscar todos (já ordenados por data!)
@@ -33,9 +52,7 @@ export class EventoRepository implements IEventoRepository {
       orderBy: { data: "asc" },
     });
 
-    return eventosPrisma.map(
-      (e) => new Evento(e, e.id, e.createdAt, e.updatedAt),
-    );
+    return eventosPrisma.map((e) => this.toEntity(e));
   }
 
   // 3. Buscar detalhes de um único evento
@@ -44,12 +61,7 @@ export class EventoRepository implements IEventoRepository {
       where: { id },
     });
     if (!eventoPrisma) return null;
-    return new Evento(
-      eventoPrisma,
-      eventoPrisma.id,
-      eventoPrisma.createdAt,
-      eventoPrisma.updatedAt,
-    );
+    return this.toEntity(eventoPrisma);
   }
 
   async update(id: string, data: Partial<Evento>): Promise<Evento> {
@@ -60,15 +72,11 @@ export class EventoRepository implements IEventoRepository {
         descricao: data.descricao,
         data: data.data,
         local: data.local,
+        fotoUrl: data.fotoUrl,
       },
     });
 
-    return new Evento(
-      eventoAtualizado,
-      eventoAtualizado.id,
-      eventoAtualizado.createdAt,
-      eventoAtualizado.updatedAt,
-    );
+    return this.toEntity(eventoAtualizado);
   }
 
   async delete(id: string): Promise<void> {

@@ -30,4 +30,12 @@ export class CreateEventoRequestDto {
   @IsString()
   @IsNotEmpty({ message: "O local é obrigatório" })
   local!: string;
+
+  @ApiProperty({
+    type: "string",
+    format: "binary",
+    required: false,
+    description: 'Imagem de fundo do evento enviada no campo "foto" (compatível com "imagem")',
+  })
+  foto?: any;
 }

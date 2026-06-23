@@ -36,6 +36,7 @@ export class EventoApplication {
   async create(
     dto: CreateEventoRequestDto,
     usuarioLogado: IUsuarioLogado,
+    fotoUrl: string,
   ): Promise<EventoResponseDto> {
     if (usuarioLogado.perfil !== "ADMIN")
       throw new ForbiddenException(
@@ -48,6 +49,7 @@ export class EventoApplication {
       descricao: dto.descricao,
       data: dataConvertida,
       local: dto.local,
+      fotoUrl,
     });
 
     const eventoSalvo = await this.eventoRepository.save(novoEvento);
@@ -69,6 +71,7 @@ export class EventoApplication {
     id: string,
     dto: UpdateEventoRequestDto,
     usuarioLogado: IUsuarioLogado,
+    fotoUrl?: string,
   ): Promise<EventoResponseDto> {
     if (usuarioLogado.perfil !== "ADMIN")
       throw new ForbiddenException(
@@ -84,6 +87,7 @@ export class EventoApplication {
       descricao: dto.descricao,
       local: dto.local,
       data: dto.data ? new Date(dto.data) : undefined,
+      fotoUrl,
     };
 
     const eventoAtualizado = await this.eventoRepository.update(
@@ -113,6 +117,7 @@ export class EventoApplication {
       descricao: evento.descricao,
       data: evento.data,
       local: evento.local,
+      fotoUrl: evento.fotoUrl,
       mes: this.getMesEnum(evento.data), // Injetamos o mês aqui
       createdAt: evento.createdAt!,
     };

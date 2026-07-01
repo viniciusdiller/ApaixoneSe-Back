@@ -1,0 +1,2 @@
+-- Placeholder migration restored to keep Prisma migration history consistent.
+-- This migration folder was missing migration.sql.

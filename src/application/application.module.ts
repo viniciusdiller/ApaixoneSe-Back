@@ -17,6 +17,7 @@ import { CasaDeCambioApplication } from "./applications/casaDeCambio.Application
 import { SecretariaTurismoApplication } from "./applications/secretariaTurismo.Application";
 import { FiquePorDentroApplication } from "./applications/fiquePorDentro.Application";
 import { JwtStrategy } from "./strategies/jwt.strategy";
+import { EmailService } from "./services/email.service";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
   ],
   providers: [
     JwtStrategy,
+    EmailService,
     UserApplication,
     GastronomiaApplication,
     HospedagemApplication,

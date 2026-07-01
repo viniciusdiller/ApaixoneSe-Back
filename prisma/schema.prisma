@@ -21,7 +21,10 @@ model User {
   email     String   @unique
   senha     String
   perfil    Perfil   @default(USUARIO)
+  active    Boolean  @default(false)
   createdAt DateTime @default(now())      // O banco preenche a data sozinho
+
+  authTokens AuthToken[]
 
   gastronomias    Gastronomia[]
   hospedagens     Hospedagem[]
@@ -30,6 +33,24 @@ model User {
   visitas        Visita[]
 
   @@map("usuarios")
+}
+
+enum AuthTokenType {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+model AuthToken {
+  id        String        @id @default(uuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String        @unique
+  type      AuthTokenType
+  expiresAt DateTime
+  createdAt DateTime      @default(now())
+
+  @@index([userId, type])
+  @@map("auth_tokens")
 }
 
 

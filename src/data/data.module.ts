@@ -15,6 +15,7 @@ import { CatMovelRepository } from "./repositories/catMovel.repository";
 import { CasaDeCambioRepository } from "./repositories/casaDeCambio.repository";
 import { SecretariaTurismoRepository } from "./repositories/secretariaTurismo.repository";
 import { FiquePorDentroRepository } from "./repositories/fiquePorDentro.repository";
+import { AuthTokenRepository } from "./repositories/authToken.repository";
 
 const repositories = [
   PrismaService,
@@ -33,6 +34,7 @@ const repositories = [
   CasaDeCambioRepository,
   SecretariaTurismoRepository,
   FiquePorDentroRepository,
+  AuthTokenRepository,
 ];
 
 @Module({

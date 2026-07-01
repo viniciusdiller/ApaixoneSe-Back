@@ -7,6 +7,7 @@ export class User {
   public senha: string;
   public perfil: PerfilUsuario = "USUARIO";
   public createdAt?: Date;
+  public active: boolean;
 
   // O construtor é a função que é chamada automaticamente quando fazemos `new User(...)`.
   // Aqui usamos o "Omit" para dizer: "Me passe todos os dados do User, MENOS o id e o createdAt,
@@ -22,6 +23,7 @@ export class User {
     this.email = props.email;
     this.senha = props.senha;
     this.perfil = props.perfil ?? "USUARIO";
+    this.active = props.active ?? false;
     this.createdAt = createdAt ?? new Date();
 
     this.validate();

@@ -59,4 +59,13 @@ export class CreateAtividadeRequestDto {
   })
   @IsNotEmpty({ message: "O roteiro é obrigatório" })
   roteiro!: TipoRoteiro;
+
+  @ApiProperty({
+    type: "string",
+    format: "binary",
+    required: false,
+    description:
+      'Logo do local que realiza a atividade, enviada no campo "logo"',
+  })
+  logo?: any;
 }

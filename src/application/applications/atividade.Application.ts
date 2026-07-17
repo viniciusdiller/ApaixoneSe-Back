@@ -18,6 +18,7 @@ export class AtividadeApplication {
   async create(
     data: CreateAtividadeRequestDto,
     usuarioLogado: IUsuarioLogado,
+    logoUrl?: string,
   ): Promise<AtividadeResponseDto> {
     if (usuarioLogado.perfil !== "ADMIN")
       throw new ForbiddenException(
@@ -30,6 +31,7 @@ export class AtividadeApplication {
       local: data.local,
       latitude: data.latitude,
       longitude: data.longitude,
+      logoUrl,
       roteiro: data.roteiro,
     });
 
@@ -57,6 +59,7 @@ export class AtividadeApplication {
     id: string,
     dto: UpdateAtividadeRequestDto,
     usuarioLogado: IUsuarioLogado,
+    logoUrl?: string,
   ): Promise<AtividadeResponseDto> {
     if (usuarioLogado.perfil !== "ADMIN")
       throw new ForbiddenException(
@@ -67,7 +70,15 @@ export class AtividadeApplication {
     if (!atividade)
       throw new NotFoundException("Atividade não encontrada para atualização.");
 
-    const atividadeAtualizada = await this.atividadeRepository.update(id, dto);
+    const atividadeAtualizada = await this.atividadeRepository.update(id, {
+      titulo: dto.titulo,
+      descricao: dto.descricao,
+      local: dto.local,
+      latitude: dto.latitude,
+      longitude: dto.longitude,
+      roteiro: dto.roteiro,
+      logoUrl: logoUrl ?? atividade.logoUrl,
+    });
     return this.mapToResponseDto(atividadeAtualizada);
   }
 
@@ -91,6 +102,7 @@ export class AtividadeApplication {
       local: atividade.local,
       latitude: atividade.latitude ?? null,
       longitude: atividade.longitude ?? null,
+      logoUrl: atividade.logoUrl ?? null,
       roteiro: atividade.roteiro,
       createdAt: atividade.createdAt!,
     };

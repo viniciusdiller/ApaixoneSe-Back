@@ -70,10 +70,11 @@ model Atividade {
   titulo      String      
   descricao   String      @db.Text 
   local       String      
-  latitude    Float?      
-  longitude   Float? 
-  
-  roteiro     TipoRoteiro 
+  latitude    Float?
+  longitude   Float?
+  logoUrl     String?
+
+  roteiro     TipoRoteiro
 
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt

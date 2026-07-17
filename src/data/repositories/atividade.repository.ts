@@ -17,6 +17,7 @@ export class AtividadeRepository implements IAtividadeRepository {
         local: atividade.local,
         latitude: atividade.latitude,
         longitude: atividade.longitude,
+        logoUrl: atividade.logoUrl,
         roteiro: atividade.roteiro,
       },
     });
@@ -75,6 +76,7 @@ export class AtividadeRepository implements IAtividadeRepository {
         local: data.local,
         latitude: data.latitude,
         longitude: data.longitude,
+        logoUrl: data.logoUrl,
         roteiro: data.roteiro,
       },
     });

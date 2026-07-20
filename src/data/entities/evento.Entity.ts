@@ -4,6 +4,7 @@ export class Evento {
   public descricao: string;
   public data: Date;
   public local: string;
+  public endereco?: string | null;
   public fotoUrl?: string;
   public createdAt?: Date;
   public updatedAt?: Date;
@@ -18,6 +19,7 @@ export class Evento {
     this.descricao = props.descricao;
     this.data = props.data;
     this.local = props.local;
+    this.endereco = props.endereco;
     this.fotoUrl = props.fotoUrl;
 
     this.id = id;

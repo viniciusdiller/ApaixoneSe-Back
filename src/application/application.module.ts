@@ -16,6 +16,8 @@ import { CatMovelApplication } from "./applications/catMovel.Application";
 import { CasaDeCambioApplication } from "./applications/casaDeCambio.Application";
 import { SecretariaTurismoApplication } from "./applications/secretariaTurismo.Application";
 import { FiquePorDentroApplication } from "./applications/fiquePorDentro.Application";
+import { PontoAguaApplication } from "./applications/pontoAgua.Application";
+import { LocalCulturalApplication } from "./applications/localCultural.Application";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { EmailService } from "./services/email.service";
 
@@ -42,6 +44,8 @@ import { EmailService } from "./services/email.service";
     CasaDeCambioApplication,
     SecretariaTurismoApplication,
     FiquePorDentroApplication,
+    PontoAguaApplication,
+    LocalCulturalApplication,
   ],
   exports: [
     UserApplication,
@@ -59,6 +63,8 @@ import { EmailService } from "./services/email.service";
     CasaDeCambioApplication,
     SecretariaTurismoApplication,
     FiquePorDentroApplication,
+    PontoAguaApplication,
+    LocalCulturalApplication,
   ],
 })
 export class ApplicationModule {}

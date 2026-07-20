@@ -127,6 +127,7 @@ model Eventos {
   descricao   String      @db.Text
   data        DateTime
   local       String
+  endereco    String?
   fotoUrl     String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -412,4 +413,52 @@ model ItemPlanoViagem {
   updatedAt        DateTime @updatedAt
 
   @@map("itens_plano_viagem")
+}
+
+// =========================================
+// PRAIAS E LAGOAS
+// =========================================
+enum TipoPontoAgua {
+  PRAIA
+  LAGOA
+}
+
+model PontoAgua {
+  id             String        @id @default(uuid())
+  tipo           TipoPontoAgua
+  nome           String
+  slug           String        @unique
+  descricaoCurta String
+  descricao      String        @db.Text
+  imagemUrl      String?
+  filtros        Json?
+  acessivel      Boolean       @default(false)
+  dificuldade    String?
+  estacionamento Boolean       @default(false)
+  quiosques      Boolean       @default(false)
+  endereco       String?
+  latitude       Float?
+  longitude      Float?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("pontos_agua")
+}
+
+// =========================================
+// CULTURA - Locais culturais e históricos
+// =========================================
+model LocalCultural {
+  id        String   @id @default(uuid())
+  nome      String
+  descricao String   @db.Text
+  texto     String   @db.Text
+  imagemUrl String?
+  endereco  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("locais_culturais")
 }

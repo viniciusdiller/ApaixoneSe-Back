@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsNotEmpty, IsDateString } from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsString, IsNotEmpty, IsDateString, IsOptional } from "class-validator";
 
 export class CreateEventoRequestDto {
   @ApiProperty({
@@ -30,6 +30,11 @@ export class CreateEventoRequestDto {
   @IsString()
   @IsNotEmpty({ message: "O local é obrigatório" })
   local!: string;
+
+  @ApiPropertyOptional({ example: "Av. Sampaio Corrêa, 500 - Saquarema - RJ" })
+  @IsOptional()
+  @IsString()
+  endereco?: string;
 
   @ApiProperty({
     type: "string",

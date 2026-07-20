@@ -16,6 +16,8 @@ import { CasaDeCambioRepository } from "./repositories/casaDeCambio.repository";
 import { SecretariaTurismoRepository } from "./repositories/secretariaTurismo.repository";
 import { FiquePorDentroRepository } from "./repositories/fiquePorDentro.repository";
 import { AuthTokenRepository } from "./repositories/authToken.repository";
+import { PontoAguaRepository } from "./repositories/pontoAgua.repository";
+import { LocalCulturalRepository } from "./repositories/localCultural.repository";
 
 const repositories = [
   PrismaService,
@@ -35,6 +37,8 @@ const repositories = [
   SecretariaTurismoRepository,
   FiquePorDentroRepository,
   AuthTokenRepository,
+  PontoAguaRepository,
+  LocalCulturalRepository,
 ];
 
 @Module({

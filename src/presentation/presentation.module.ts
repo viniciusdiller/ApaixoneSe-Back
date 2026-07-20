@@ -15,6 +15,8 @@ import { CatMovelController } from "./controllers/catMovel.controller";
 import { CasaDeCambioController } from "./controllers/casaDeCambio.controller";
 import { SecretariaTurismoController } from "./controllers/secretariaTurismo.controller";
 import { FiquePorDentroController } from "./controllers/fiquePorDentro.controller";
+import { PontoAguaController } from "./controllers/pontoAgua.controller";
+import { LocalCulturalController } from "./controllers/localCultural.controller";
 
 @Module({
   imports: [ApplicationModule],
@@ -34,6 +36,8 @@ import { FiquePorDentroController } from "./controllers/fiquePorDentro.controlle
     CasaDeCambioController,
     SecretariaTurismoController,
     FiquePorDentroController,
+    PontoAguaController,
+    LocalCulturalController,
   ],
 })
 export class PresentationModule {}

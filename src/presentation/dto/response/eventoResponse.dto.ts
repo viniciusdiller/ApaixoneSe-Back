@@ -17,6 +17,9 @@ export class EventoResponseDto {
   @ApiProperty({ example: "Parque de Exposições, Sampaio Corrêa" })
   local!: string;
 
+  @ApiProperty({ example: "Av. Sampaio Corrêa, 500 - Saquarema - RJ", required: false })
+  endereco?: string | null;
+
   @ApiProperty({
     example: "/public/eventos/abril/saquarema_country_fest/background_1718046234123.webp",
     required: false,

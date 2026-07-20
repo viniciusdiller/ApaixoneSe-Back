@@ -49,6 +49,7 @@ export class EventoApplication {
       descricao: dto.descricao,
       data: dataConvertida,
       local: dto.local,
+      endereco: dto.endereco,
       fotoUrl,
     });
 
@@ -86,6 +87,7 @@ export class EventoApplication {
       titulo: dto.titulo,
       descricao: dto.descricao,
       local: dto.local,
+      endereco: dto.endereco,
       data: dto.data ? new Date(dto.data) : undefined,
       fotoUrl,
     };
@@ -117,6 +119,7 @@ export class EventoApplication {
       descricao: evento.descricao,
       data: evento.data,
       local: evento.local,
+      endereco: evento.endereco ?? null,
       fotoUrl: evento.fotoUrl,
       mes: this.getMesEnum(evento.data), // Injetamos o mês aqui
       createdAt: evento.createdAt!,

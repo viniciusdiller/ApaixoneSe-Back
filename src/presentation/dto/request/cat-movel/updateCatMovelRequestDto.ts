@@ -31,4 +31,21 @@ export class UpdateCatMovelRequestDto {
     description: "Novo vídeo do card (substitui a mídia anterior). Envie imagem OU vídeo, não ambos.",
   })
   video?: Express.Multer.File;
+
+  @ApiPropertyOptional({
+    type: "array",
+    items: { type: "string", format: "binary" },
+    description: "Novas imagens a adicionar à galeria.",
+  })
+  @IsOptional()
+  imagens?: any[];
+
+  @ApiPropertyOptional({
+    type: "string",
+    description:
+      'JSON com a ordem final das imagens da galeria: cada item é a URL de uma imagem existente mantida, ou o marcador "__new__" na posição de cada novo arquivo enviado (na ordem em que foram anexados no campo "imagens"). Imagens existentes ausentes da lista são removidas.',
+  })
+  @IsOptional()
+  @IsString()
+  ordem?: string;
 }

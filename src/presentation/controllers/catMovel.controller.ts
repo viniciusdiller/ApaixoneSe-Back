@@ -30,6 +30,7 @@ const uploadInterceptor = FileFieldsInterceptor(
   [
     { name: "imagem", maxCount: 1 },
     { name: "video", maxCount: 1 },
+    { name: "imagens", maxCount: 10 },
   ],
   { storage: memoryStorage() },
 );
@@ -56,10 +57,15 @@ export class CatMovelController {
     @Body() dto: CreateCatMovelRequestDto,
     @Req() req: any,
     @UploadedFiles()
-    files?: { imagem?: Express.Multer.File[]; video?: Express.Multer.File[] },
+    files?: {
+      imagem?: Express.Multer.File[];
+      video?: Express.Multer.File[];
+      imagens?: Express.Multer.File[];
+    },
   ) {
     const { imagemUrl, videoUrl } = await this.processarMidia(files);
-    return this.app.create(dto, req.user, imagemUrl, videoUrl);
+    const imagensUrl = await this.processarGaleria(files?.imagens);
+    return this.app.create(dto, req.user, imagemUrl, videoUrl, imagensUrl);
   }
 
   // ──────────────────────────────────────────────────────────
@@ -88,10 +94,26 @@ export class CatMovelController {
     @Body() dto: UpdateCatMovelRequestDto,
     @Req() req: any,
     @UploadedFiles()
-    files?: { imagem?: Express.Multer.File[]; video?: Express.Multer.File[] },
+    files?: {
+      imagem?: Express.Multer.File[];
+      video?: Express.Multer.File[];
+      imagens?: Express.Multer.File[];
+    },
   ) {
     const { imagemUrl, videoUrl } = await this.processarMidia(files);
-    return this.app.update(dto, req.user, imagemUrl, videoUrl);
+    const imagensUrl = await this.processarGaleria(files?.imagens);
+
+    let ordem: string[] | undefined;
+    if (dto.ordem) {
+      try {
+        const parsed = JSON.parse(dto.ordem);
+        if (Array.isArray(parsed)) ordem = parsed;
+      } catch {
+        // ignora ordem inválida — mantém comportamento sem reordenação
+      }
+    }
+
+    return this.app.update(dto, req.user, imagemUrl, videoUrl, imagensUrl, ordem);
   }
 
   // ──────────────────────────────────────────────────────────
@@ -125,5 +147,28 @@ export class CatMovelController {
     }
 
     return { imagemUrl, videoUrl };
+  }
+
+  // ──────────────────────────────────────────────────────────
+  // Helper: processa a galeria de imagens (→ WebP)
+  // ──────────────────────────────────────────────────────────
+  private async processarGaleria(
+    files?: Express.Multer.File[],
+  ): Promise<string[] | undefined> {
+    if (!files || files.length === 0) return undefined;
+
+    const uploadDir = `./uploads/cat-movel`;
+    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+    const urls: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const nomeImagem = `galeria_${Date.now()}_${i}.webp`;
+      await sharp(files[i].buffer)
+        .resize(800)
+        .webp({ quality: 80 })
+        .toFile(path.join(uploadDir, nomeImagem));
+      urls.push(`/uploads/cat-movel/${nomeImagem}`);
+    }
+    return urls;
   }
 }

@@ -54,8 +54,9 @@ export class CatApplication {
     id: string,
     data: any,
     usuarioLogado: IUsuarioLogado,
-    imagensUrl?: string[],
+    novasImagensUrl?: string[],
     videoUrl?: string,
+    ordem?: string[],
   ) {
     if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
@@ -70,12 +71,37 @@ export class CatApplication {
     const dadosAtualizacao: any = { ...data };
     delete dadosAtualizacao.imagens;
     delete dadosAtualizacao.video;
+    delete dadosAtualizacao.ordem;
 
-    if (imagensUrl && imagensUrl.length > 0)
-      dadosAtualizacao.imagensUrl = imagensUrl;
     if (videoUrl) dadosAtualizacao.videoUrl = videoUrl;
 
+    if (ordem && ordem.length > 0) {
+      // Reconstrói a lista final combinando existentes mantidas (na nova ordem) + novas enviadas
+      let proximoIndice = 0;
+      const urlsFinais = ordem.map((item) =>
+        item === "__new__" ? novasImagensUrl?.[proximoIndice++] : item,
+      ).filter((url): url is string => !!url);
+
+      const antigas: string[] = Array.isArray(existente.imagensUrl)
+        ? existente.imagensUrl
+        : [];
+      antigas
+        .filter((url) => !urlsFinais.includes(url))
+        .forEach((url) => this.removerArquivo(url));
+
+      dadosAtualizacao.imagensUrl = urlsFinais;
+    } else if (novasImagensUrl && novasImagensUrl.length > 0) {
+      // Sem informação de ordem (cliente antigo): mantém o comportamento anterior
+      dadosAtualizacao.imagensUrl = novasImagensUrl;
+    }
+
     return this.repo.update(id, dadosAtualizacao);
+  }
+
+  private removerArquivo(url?: string | null): void {
+    if (!url) return;
+    const filePath = path.join(".", url);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   }
 
   async delete(id: string, usuarioLogado: IUsuarioLogado) {

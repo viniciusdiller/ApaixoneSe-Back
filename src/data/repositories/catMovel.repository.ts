@@ -14,6 +14,7 @@ export class CatMovelRepository implements ICatMovelRepository {
         descricao: catMovel.descricao,
         imagemUrl: catMovel.imagemUrl ?? null,
         videoUrl: catMovel.videoUrl ?? null,
+        imagensUrl: catMovel.imagensUrl ?? undefined,
       },
     });
     return new CatMovel(criado);

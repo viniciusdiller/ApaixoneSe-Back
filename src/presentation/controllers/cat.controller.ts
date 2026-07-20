@@ -152,14 +152,18 @@ export class CatController {
       videoUrl = `/uploads/cat/informacoes/${nomeVideo}`;
     }
 
-    // 👈 Atualizado para passar os arrays corretamente
-    return this.app.update(
-      id,
-      dto,
-      req.user,
-      imagensUrl.length > 0 ? imagensUrl : undefined,
-      videoUrl,
-    );
+    // 3. PARSEAR A ORDEM FINAL DAS IMAGENS (existentes mantidas + novas), se enviada
+    let ordem: string[] | undefined;
+    if (dto.ordem) {
+      try {
+        const parsed = JSON.parse(dto.ordem);
+        if (Array.isArray(parsed)) ordem = parsed;
+      } catch {
+        // ignora ordem inválida — mantém comportamento sem reordenação
+      }
+    }
+
+    return this.app.update(id, dto, req.user, imagensUrl, videoUrl, ordem);
   }
 
   @Delete(":id")

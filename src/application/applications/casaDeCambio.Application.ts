@@ -11,14 +11,14 @@ import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
 export class CasaDeCambioApplication {
   constructor(private readonly repo: CasaDeCambioRepository) {}
 
-  async create(data: any, usuarioLogado: IUsuarioLogado) {
+  async create(data: any, usuarioLogado: IUsuarioLogado, logoUrl?: string) {
     if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
         "Apenas administradores podem criar Casas de Câmbio.",
       );
     }
 
-    const novaCasa = new CasaDeCambio(data);
+    const novaCasa = new CasaDeCambio({ ...data, logoUrl });
     return this.repo.save(novaCasa);
   }
 
@@ -32,7 +32,12 @@ export class CasaDeCambioApplication {
     return c;
   }
 
-  async update(id: string, data: any, usuarioLogado: IUsuarioLogado) {
+  async update(
+    id: string,
+    data: any,
+    usuarioLogado: IUsuarioLogado,
+    logoUrl?: string,
+  ) {
     if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
         "Apenas administradores podem alterar Casas de Câmbio.",
@@ -43,7 +48,10 @@ export class CasaDeCambioApplication {
     if (!existente)
       throw new NotFoundException("Casa de Câmbio não encontrada.");
 
-    return this.repo.update(id, data);
+    return this.repo.update(id, {
+      ...data,
+      logoUrl: logoUrl ?? existente.logoUrl,
+    });
   }
 
   async delete(id: string, usuarioLogado: IUsuarioLogado) {

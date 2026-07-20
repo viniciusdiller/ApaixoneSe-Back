@@ -24,4 +24,13 @@ export class CreateCatRequestDto {
   })
   @IsOptional()
   video?: any;
+
+  @ApiProperty({
+    type: "string",
+    description: "JSON com a ordem das imagens enviadas (ignorado na criação — sem imagens existentes para reordenar).",
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  ordem?: string;
 }

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateCatMovelRequestDto {
   @ApiProperty({
@@ -31,4 +31,20 @@ export class CreateCatMovelRequestDto {
     description: "Vídeo do card (envie imagem OU vídeo, não ambos). Formatos: mp4, mov, webm.",
   })
   video?: Express.Multer.File;
+
+  @ApiPropertyOptional({
+    type: "array",
+    items: { type: "string", format: "binary" },
+    description: "Galeria de imagens exibida em carrossel ao lado da mídia principal.",
+  })
+  @IsOptional()
+  imagens?: any[];
+
+  @ApiPropertyOptional({
+    type: "string",
+    description: "JSON com a ordem das imagens enviadas (ignorado na criação — sem imagens existentes para reordenar).",
+  })
+  @IsOptional()
+  @IsString()
+  ordem?: string;
 }

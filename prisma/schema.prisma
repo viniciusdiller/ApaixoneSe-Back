@@ -283,6 +283,9 @@ model CatMovel {
   imagemUrl  String?  // Caminho da imagem salva no servidor
   videoUrl   String?  // Caminho do vídeo salvo no servidor
 
+  // Galeria de imagens exibida em carrossel ao lado da mídia principal
+  imagensUrl Json?
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -312,7 +315,8 @@ model CasaDeCambio {
   nome      String
   telefone  String
   endereco  String
-  
+  logoUrl   String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

@@ -21,6 +21,7 @@ export class CatMovelApplication {
     usuarioLogado: IUsuarioLogado,
     imagemUrl?: string,
     videoUrl?: string,
+    imagensUrl?: string[],
   ): Promise<CatMovel> {
     if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
@@ -53,6 +54,7 @@ export class CatMovelApplication {
         descricao: data.descricao,
         imagemUrl: imagemUrl ?? null,
         videoUrl: videoUrl ?? null,
+        imagensUrl: imagensUrl && imagensUrl.length > 0 ? imagensUrl : undefined,
       }),
     );
   }
@@ -74,6 +76,8 @@ export class CatMovelApplication {
     usuarioLogado: IUsuarioLogado,
     imagemUrl?: string,
     videoUrl?: string,
+    novasImagensUrl?: string[],
+    ordem?: string[],
   ): Promise<CatMovel> {
     if (usuarioLogado.perfil !== "ADMIN") {
       throw new ForbiddenException(
@@ -113,6 +117,30 @@ export class CatMovelApplication {
       this.removerArquivo(existente.videoUrl);
       dadosAtualizacao.videoUrl = videoUrl;
       dadosAtualizacao.imagemUrl = null;
+    }
+
+    if (ordem && ordem.length > 0) {
+      // Reconstrói a galeria combinando existentes mantidas (na nova ordem) + novas enviadas
+      let proximoIndice = 0;
+      const urlsFinais = ordem
+        .map((item) => (item === "__new__" ? novasImagensUrl?.[proximoIndice++] : item))
+        .filter((url): url is string => !!url);
+
+      const antigas: string[] = Array.isArray(existente.imagensUrl)
+        ? existente.imagensUrl
+        : [];
+      antigas
+        .filter((url) => !urlsFinais.includes(url))
+        .forEach((url) => this.removerArquivo(url));
+
+      dadosAtualizacao.imagensUrl = urlsFinais;
+    } else if (novasImagensUrl && novasImagensUrl.length > 0) {
+      // Sem informação de ordem (cliente antigo): mantém o comportamento anterior
+      const antigas: string[] = Array.isArray(existente.imagensUrl)
+        ? existente.imagensUrl
+        : [];
+      antigas.forEach((url) => this.removerArquivo(url));
+      dadosAtualizacao.imagensUrl = novasImagensUrl;
     }
 
     return this.repo.update(existente.id!, dadosAtualizacao);

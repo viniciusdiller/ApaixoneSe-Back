@@ -7,6 +7,9 @@ export class CatMovel {
   imagemUrl?: string | null;
   videoUrl?: string | null;
 
+  // Galeria de imagens exibida em carrossel ao lado da mídia principal
+  imagensUrl?: string[] | any;
+
   createdAt?: Date;
   updatedAt?: Date;
 

@@ -3,6 +3,7 @@ export class CasaDeCambio {
   nome!: string;
   telefone!: string;
   endereco!: string;
+  logoUrl?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 

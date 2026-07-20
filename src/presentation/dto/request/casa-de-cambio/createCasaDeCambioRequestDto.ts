@@ -25,4 +25,12 @@ export class CreateCasaDeCambioRequestDto {
   @IsString({ message: "O endereço deve ser uma string válida." })
   @IsNotEmpty({ message: "O endereço não pode estar vazio." })
   endereco?: string;
+
+  @ApiProperty({
+    type: "string",
+    format: "binary",
+    required: false,
+    description: 'Logo da casa de câmbio, enviada no campo "logo"',
+  })
+  logo?: any;
 }

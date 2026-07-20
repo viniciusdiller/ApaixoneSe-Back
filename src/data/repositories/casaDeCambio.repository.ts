@@ -13,6 +13,7 @@ export class CasaDeCambioRepository implements ICasaDeCambioRepository {
         nome: casa.nome,
         telefone: casa.telefone,
         endereco: casa.endereco,
+        logoUrl: casa.logoUrl,
       },
     });
     return new CasaDeCambio(criado);

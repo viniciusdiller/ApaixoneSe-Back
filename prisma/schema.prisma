@@ -17,12 +17,12 @@ enum Perfil {
 model User {
   id        String   @id @default(uuid()) // Gera um ID único automaticamente
   nome      String
-  usuario   String   @unique              // O @unique garante que não existam 2 iguais no banco
+  usuario   String   @unique // O @unique garante que não existam 2 iguais no banco
   email     String   @unique
   senha     String
   perfil    Perfil   @default(USUARIO)
   active    Boolean  @default(false)
-  createdAt DateTime @default(now())      // O banco preenche a data sozinho
+  createdAt DateTime @default(now()) // O banco preenche a data sozinho
 
   authTokens AuthToken[]
 
@@ -30,7 +30,7 @@ model User {
   hospedagens     Hospedagem[]
   servicosTurista ServicoTurista[]
   planosViagem    PlanoViagem[]
-  visitas        Visita[]
+  visitas         Visita[]
 
   @@map("usuarios")
 }
@@ -53,8 +53,6 @@ model AuthToken {
   @@map("auth_tokens")
 }
 
-
-
 enum TipoRoteiro {
   A_PE
   ESPORTE_E_AVENTURA
@@ -66,45 +64,43 @@ enum TipoRoteiro {
 }
 
 model Atividade {
-  id          String      @id @default(uuid())
-  titulo      String      
-  descricao   String      @db.Text 
-  local       String      
-  latitude    Float?
-  longitude   Float?
-  logoUrl     String?
+  id        String  @id @default(uuid())
+  titulo    String
+  descricao String  @db.Text
+  local     String
+  latitude  Float?
+  longitude Float?
+  logoUrl   String?
 
-  roteiro     TipoRoteiro
+  roteiro TipoRoteiro
 
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   itensPlanoViagem ItemPlanoViagem[]
-  visitas        Visita[]
+  visitas          Visita[]
 
   @@map("atividades")
 }
 
-
 model Visita {
-  id             String       @id @default(uuid())
-  
+  id String @id @default(uuid())
+
   // Quem visitou?
-  usuarioId      String
-  usuario        User         @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId String
+  usuario   User   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   // O que foi visitado? (Pode ser uma Gastronomia OU uma Atividade)
-  gastronomiaId  String?
-  gastronomia    Gastronomia? @relation(fields: [gastronomiaId], references: [id], onDelete: Cascade)
+  gastronomiaId String?
+  gastronomia   Gastronomia? @relation(fields: [gastronomiaId], references: [id], onDelete: Cascade)
 
-  atividadeId    String?
-  atividade      Atividade?   @relation(fields: [atividadeId], references: [id], onDelete: Cascade)
+  atividadeId String?
+  atividade   Atividade? @relation(fields: [atividadeId], references: [id], onDelete: Cascade)
 
-  dataVisita     DateTime     @default(now())
+  dataVisita DateTime @default(now())
 
   @@map("visitas")
 }
-
 
 enum Mes {
   JANEIRO
@@ -122,35 +118,33 @@ enum Mes {
 }
 
 model Eventos {
-  id          String      @id@default(uuid())
-  titulo      String
-  descricao   String      @db.Text
-  data        DateTime
-  dataFim     DateTime?
-  local       String
-  endereco    String?
-  fotoUrl     String?
-  destaque    Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        String    @id @default(uuid())
+  titulo    String
+  descricao String    @db.Text
+  data      DateTime
+  dataFim   DateTime?
+  local     String
+  endereco  String?
+  fotoUrl   String?
+  destaque  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   itensPlanoViagem ItemPlanoViagem[]
 
-  @@map("eventos") 
+  @@map("eventos")
 }
 
 model EventoPrincipal {
   id        String   @id @default(uuid())
   titulo    String
-  etapa     String?  
-  data      DateTime 
+  etapa     String?
+  data      DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("eventos_principais")
 }
-
-
 
 enum StatusEstabelecimento {
   PENDENTE
@@ -159,71 +153,76 @@ enum StatusEstabelecimento {
 }
 
 model Gastronomia {
-  id              String   @id @default(uuid())
-  nome            String
-  telefone        String
-  instagram       String?  // Opcional
-  validade         DateTime?
-  endereco        String
-  especialidade   String?  // Ex: "Frutos do Mar", "Pizzaria"
-  
+  id            String    @id @default(uuid())
+  nome          String
+  telefone      String
+  instagram     String? // Opcional
+  validade      DateTime?
+  endereco      String
+  especialidade String? // Ex: "Frutos do Mar", "Pizzaria"
+
   // Documentos
-  cnpj            String   @unique
+  cnpj            String @unique
   responsavelNome String
   responsavelCpf  String
-  
+
   // Arquivos (Físicos no servidor)
-  documentoPdfUrl String   // Caminho do PDF salvo no servidor
-  logoUrl         String   // Caminho da imagem salva no servidor
+  documentoPdfUrl String // Caminho do PDF salvo no servidor
+  logoUrl         String // Caminho da imagem salva no servidor
 
   // Controle de Qualidade
-  status          StatusEstabelecimento @default(PENDENTE)
+  status StatusEstabelecimento @default(PENDENTE)
+
+  // Prova de consentimento do Termo de Adesão (carimbada pelo servidor)
+  termoAceiteEm DateTime?
 
   // ==========================================
   // RELACIONAMENTO: QUEM É O DONO? (OWNERSHIP)
   // ==========================================
-  usuarioId       String
-  usuario         User  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId String
+  usuario   User   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   itensPlanoViagem ItemPlanoViagem[]
-  visitas        Visita[]
+  visitas          Visita[]
 
   @@map("gastronomias")
 }
 
 model Hospedagem {
-  id               String   @id @default(uuid())
+  id               String  @id @default(uuid())
   nome             String
   telefone         String
   tags             Json?
   instagram        String?
-  site             String?  
+  site             String?
   endereco         String
-  textoDiferencial String   @db.Text 
-  
-  cnpj             String   @unique
-  responsavelNome  String
-  responsavelCpf   String
-  
-  documentoPdfUrl  String   
-  logoUrl          String   
+  textoDiferencial String  @db.Text
 
-  status           StatusEstabelecimento @default(PENDENTE)
+  cnpj            String @unique
+  responsavelNome String
+  responsavelCpf  String
 
-  usuarioId        String
-  usuario          User  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  documentoPdfUrl String
+  logoUrl         String
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  status StatusEstabelecimento @default(PENDENTE)
+
+  // Prova de consentimento do Termo de Adesão (carimbada pelo servidor)
+  termoAceiteEm DateTime?
+
+  usuarioId String
+  usuario   User   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   itensPlanoViagem ItemPlanoViagem[]
 
   @@map("hospedagens")
 }
-
 
 enum TipoServicoTurista {
   GUIA_TURISMO
@@ -238,16 +237,15 @@ enum ModalidadeEsporte {
   TERRESTRE
 }
 
-
 model ServicoTurista {
-  id               String             @id @default(uuid())
+  id               String                @id @default(uuid())
   tipo             TipoServicoTurista
   nome             String
   telefone         String
   instagram        String?
   site             String?
   validade         DateTime?
-  descricao        String?            @db.Text
+  descricao        String?               @db.Text
   endereco         String?
   cnpj             String?
   roteiros         Json?
@@ -259,12 +257,15 @@ model ServicoTurista {
   fotoUrl          String?
   status           StatusEstabelecimento @default(PENDENTE)
 
-  // O Dono do Serviço
-  usuarioId        String
-  usuario          User  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  // Prova de consentimento do Termo de Adesão (carimbada pelo servidor)
+  termoAceiteEm DateTime?
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  // O Dono do Serviço
+  usuarioId String
+  usuario   User   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   itensPlanoViagem ItemPlanoViagem[]
 
@@ -272,12 +273,12 @@ model ServicoTurista {
 }
 
 model Cat {
-  id               String   @id @default(uuid())
-  texto            String   @db.Text
-  imagensUrl Json?   
+  id         String   @id @default(uuid())
+  texto      String   @db.Text
+  imagensUrl Json?
   videoUrl   String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("cat")
 }
@@ -286,19 +287,19 @@ model Cat {
 // CAT MÓVEL - Cartão/Card com mídia variada
 // =========================================
 model CatMovel {
-  id         String   @id @default(uuid())
-  titulo     String
-  descricao  String   @db.Text
+  id        String @id @default(uuid())
+  titulo    String
+  descricao String @db.Text
 
   // Mídia: pode ser uma imagem OU um vídeo (mutuamente exclusivos)
-  imagemUrl  String?  // Caminho da imagem salva no servidor
-  videoUrl   String?  // Caminho do vídeo salvo no servidor
+  imagemUrl String? // Caminho da imagem salva no servidor
+  videoUrl  String? // Caminho do vídeo salvo no servidor
 
   // Galeria de imagens exibida em carrossel ao lado da mídia principal
   imagensUrl Json?
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("cat_movel")
 }
@@ -307,11 +308,11 @@ model CatMovel {
 // FIQUE POR DENTRO - Galeria de até 5 imagens
 // =========================================
 model FiquePorDentro {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // Posição real da imagem: "1", "2", "3", "4" ou "5"
   // @unique garante que não existam duas imagens na mesma posição
-  ordem     String   @unique
+  ordem String @unique
 
   imagemUrl String
 
@@ -322,25 +323,25 @@ model FiquePorDentro {
 }
 
 model CasaDeCambio {
-  id        String @id @default(uuid())
-  nome      String
-  telefone  String
-  endereco  String
-  logoUrl   String?
+  id       String  @id @default(uuid())
+  nome     String
+  telefone String
+  endereco String
+  logoUrl  String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model SecretariaTurismo {
-  id               String                        @id @default(uuid())
-  textoExplicativo String                        @db.Text
+  id               String   @id @default(uuid())
+  textoExplicativo String   @db.Text
   videoUrl         String?
-  createdAt        DateTime                      @default(now())
-  updatedAt        DateTime                      @updatedAt
-  
-  turistandos      SecretariaTurismoTuristando[]
-  projetos         SecretariaTurismoProjeto[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  turistandos SecretariaTurismoTuristando[]
+  projetos    SecretariaTurismoProjeto[]
 
   @@map("secretaria_turismo")
 }
@@ -351,8 +352,8 @@ model SecretariaTurismoTuristando {
   secretariaTurismo   SecretariaTurismo @relation(fields: [secretariaTurismoId], references: [id], onDelete: Cascade)
   titulo              String
   texto               String            @db.Text
-  imagensUrl          Json?             // Array de caminhos das imagens
-  ordem               Int            @default(0)
+  imagensUrl          Json? // Array de caminhos das imagens
+  ordem               Int               @default(0)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 
@@ -372,22 +373,21 @@ model SecretariaTurismoProjeto {
   @@map("secretaria_turismo_projeto")
 }
 
-
 model PlanoViagem {
-  id          String   @id @default(uuid())
-  titulo      String
-  dataInicio  DateTime
-  dataFim     DateTime
-  
+  id         String   @id @default(uuid())
+  titulo     String
+  dataInicio DateTime
+  dataFim    DateTime
+
   // Quem é o dono deste roteiro?
-  usuarioId   String
-  usuario     User     @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuarioId String
+  usuario   User   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   // As atividades do roteiro
-  itens       ItemPlanoViagem[]
+  itens ItemPlanoViagem[]
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("planos_viagem")
 }
@@ -398,30 +398,30 @@ model ItemPlanoViagem {
   anotacao         String?  @db.Text // Ex: "Lembrar de levar toalha"
 
   // A qual plano este item pertence?
-  planoViagemId    String
-  planoViagem      PlanoViagem @relation(fields: [planoViagemId], references: [id], onDelete: Cascade)
+  planoViagemId String
+  planoViagem   PlanoViagem @relation(fields: [planoViagemId], references: [id], onDelete: Cascade)
 
   // ==========================================
   // RELAÇÕES OPCIONAIS (Polimorfismo)
   // O utilizador preencherá apenas UM destes IDs por cada item criado
   // ==========================================
-  gastronomiaId    String?
-  gastronomia      Gastronomia? @relation(fields: [gastronomiaId], references: [id], onDelete: SetNull)
+  gastronomiaId String?
+  gastronomia   Gastronomia? @relation(fields: [gastronomiaId], references: [id], onDelete: SetNull)
 
-  hospedagemId     String?
-  hospedagem       Hospedagem?  @relation(fields: [hospedagemId], references: [id], onDelete: SetNull)
+  hospedagemId String?
+  hospedagem   Hospedagem? @relation(fields: [hospedagemId], references: [id], onDelete: SetNull)
 
-  eventoId         String?
-  evento           Eventos?     @relation(fields: [eventoId], references: [id], onDelete: SetNull)
+  eventoId String?
+  evento   Eventos? @relation(fields: [eventoId], references: [id], onDelete: SetNull)
 
-  atividadeId      String?
-  atividade        Atividade?  @relation(fields: [atividadeId], references: [id], onDelete: SetNull)
+  atividadeId String?
+  atividade   Atividade? @relation(fields: [atividadeId], references: [id], onDelete: SetNull)
 
   servicoTuristaId String?
   servicoTurista   ServicoTurista? @relation(fields: [servicoTuristaId], references: [id], onDelete: SetNull)
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("itens_plano_viagem")
 }
@@ -451,8 +451,8 @@ model PontoAgua {
   latitude       Float?
   longitude      Float?
 
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("pontos_agua")
 }
@@ -461,10 +461,10 @@ model PontoAgua {
 // CULTURA - Locais culturais e históricos
 // =========================================
 model LocalCultural {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   nome      String
-  descricao String   @db.Text
-  texto     String   @db.Text
+  descricao String  @db.Text
+  texto     String  @db.Text
   imagemUrl String?
   endereco  String?
 

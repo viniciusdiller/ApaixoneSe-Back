@@ -31,6 +31,11 @@ export class GastronomiaApplication {
     delete dadosCriacao.logo;
     delete dadosCriacao.documentoPdf;
 
+    // O DTO já garante (via @MustAccept) que termoAceite === true antes de
+    // chegar aqui. O timestamp de consentimento é carimbado pelo servidor,
+    // nunca aceito vindo do cliente, para servir como prova de aceite.
+    delete dadosCriacao.termoAceite;
+
     // 🛑 CONVERSÃO DA DATA
     if (dadosCriacao.validade) {
       dadosCriacao.validade = new Date(dadosCriacao.validade);
@@ -41,6 +46,7 @@ export class GastronomiaApplication {
       usuarioId,
       logoUrl,
       documentoPdfUrl: pdfUrl,
+      termoAceiteEm: new Date(),
     });
 
     const salva = await this.repo.save(nova);
@@ -178,6 +184,7 @@ export class GastronomiaApplication {
       logoUrl: g.logoUrl,
       validade: g.validade,
       status: g.status,
+      termoAceiteEm: g.termoAceiteEm,
       usuarioId: g.usuarioId,
       createdAt: g.createdAt!,
       updatedAt: g.updatedAt!,

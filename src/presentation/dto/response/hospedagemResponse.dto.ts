@@ -54,6 +54,13 @@ export class HospedagemResponseDto {
   @ApiProperty({ enum: StatusEstabelecimento, example: "PENDENTE" })
   status!: StatusEstabelecimento;
 
+  @ApiProperty({
+    description: "Data/hora em que o Termo de Adesão foi aceito (carimbada pelo servidor)",
+    required: false,
+    nullable: true,
+  })
+  termoAceiteEm?: Date | null;
+
   @ApiProperty({ example: "635b1aac-cb78-4c6c-9b9b-824512047256" })
   usuarioId!: string;
 

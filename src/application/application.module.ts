@@ -19,6 +19,7 @@ import { FiquePorDentroApplication } from "./applications/fiquePorDentro.Applica
 import { PontoAguaApplication } from "./applications/pontoAgua.Application";
 import { LocalCulturalApplication } from "./applications/localCultural.Application";
 import { ClickCounterApplication } from "./applications/clickCounter.Application";
+import { AuditLogApplication } from "./applications/auditLog.Application";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { EmailService } from "./services/email.service";
 
@@ -48,6 +49,7 @@ import { EmailService } from "./services/email.service";
     PontoAguaApplication,
     LocalCulturalApplication,
     ClickCounterApplication,
+    AuditLogApplication,
   ],
   exports: [
     UserApplication,
@@ -68,6 +70,7 @@ import { EmailService } from "./services/email.service";
     PontoAguaApplication,
     LocalCulturalApplication,
     ClickCounterApplication,
+    AuditLogApplication,
   ],
 })
 export class ApplicationModule {}

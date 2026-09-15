@@ -3,6 +3,7 @@ import { AcaoAuditoria } from "@prisma/client";
 import { AuditLogApplication } from "./auditLog.Application";
 import { AuditLogRepository } from "../../data/repositories/auditLog.repository";
 import { UserRepository } from "../../data/repositories/user.repository";
+import { PrismaService } from "../../data/providers/db/prisma.Service";
 import { AuditLog } from "../../data/entities/auditLog.Entity";
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
 
@@ -10,6 +11,7 @@ describe("AuditLogApplication", () => {
   let application: AuditLogApplication;
   let repo: jest.Mocked<AuditLogRepository>;
   let userRepo: jest.Mocked<UserRepository>;
+  let prisma: Record<string, { findUnique: jest.Mock }>;
 
   const admin: IUsuarioLogado = { id: "admin-1", perfil: "ADMIN" };
   const parceiro: IUsuarioLogado = { id: "parceiro-1", perfil: "PARCEIRO" };
@@ -25,7 +27,16 @@ describe("AuditLogApplication", () => {
       findById: jest.fn(),
     } as unknown as jest.Mocked<UserRepository>;
 
-    application = new AuditLogApplication(repo, userRepo);
+    prisma = {
+      gastronomia: { findUnique: jest.fn() },
+      user: { findUnique: jest.fn() },
+    };
+
+    application = new AuditLogApplication(
+      repo,
+      userRepo,
+      prisma as unknown as PrismaService,
+    );
   });
 
   describe("listar", () => {
@@ -110,6 +121,84 @@ describe("AuditLogApplication", () => {
           ip: null,
         }),
       );
+    });
+  });
+
+  describe("buscarSnapshotAntesDeExcluir", () => {
+    it("retorna nulo quando não há recursoId", async () => {
+      const resultado = await application.buscarSnapshotAntesDeExcluir(
+        "Gastronomia",
+        null,
+      );
+      expect(resultado).toEqual({ descricao: null, detalhes: null });
+      expect(prisma.gastronomia.findUnique).not.toHaveBeenCalled();
+    });
+
+    it("busca o registro pelo model do Prisma derivado do nome do recurso (PascalCase -> camelCase)", async () => {
+      prisma.gastronomia.findUnique.mockResolvedValue({
+        id: "g1",
+        nome: "Restaurante do Vineco",
+        cnpj: "123",
+      });
+
+      const resultado = await application.buscarSnapshotAntesDeExcluir(
+        "Gastronomia",
+        "g1",
+      );
+
+      expect(prisma.gastronomia.findUnique).toHaveBeenCalledWith({
+        where: { id: "g1" },
+      });
+      expect(resultado).toEqual({
+        descricao: "Restaurante do Vineco",
+        detalhes: { id: "g1", nome: "Restaurante do Vineco", cnpj: "123" },
+      });
+    });
+
+    it("nunca inclui a senha nos detalhes de um usuário excluído", async () => {
+      prisma.user.findUnique.mockResolvedValue({
+        id: "u1",
+        nome: "Fulano",
+        senha: "hash-super-secreto",
+      });
+
+      const resultado = await application.buscarSnapshotAntesDeExcluir(
+        "User",
+        "u1",
+      );
+
+      expect(resultado.detalhes).toEqual({ id: "u1", nome: "Fulano" });
+      expect(resultado.detalhes).not.toHaveProperty("senha");
+    });
+
+    it("degrada para nulo quando o recurso não corresponde a nenhum model do Prisma", async () => {
+      const resultado = await application.buscarSnapshotAntesDeExcluir(
+        "RecursoQueNaoExiste",
+        "id-1",
+      );
+      expect(resultado).toEqual({ descricao: null, detalhes: null });
+    });
+
+    it("degrada para nulo quando o registro já não existe mais no banco", async () => {
+      prisma.gastronomia.findUnique.mockResolvedValue(null);
+
+      const resultado = await application.buscarSnapshotAntesDeExcluir(
+        "Gastronomia",
+        "g1",
+      );
+
+      expect(resultado).toEqual({ descricao: null, detalhes: null });
+    });
+
+    it("degrada para nulo em vez de propagar erro do Prisma", async () => {
+      prisma.gastronomia.findUnique.mockRejectedValue(new Error("timeout"));
+
+      const resultado = await application.buscarSnapshotAntesDeExcluir(
+        "Gastronomia",
+        "g1",
+      );
+
+      expect(resultado).toEqual({ descricao: null, detalhes: null });
     });
   });
 });

@@ -25,6 +25,9 @@ describe("AuditLogInterceptor", () => {
   beforeEach(() => {
     auditLogApplication = {
       registrar: jest.fn().mockResolvedValue(undefined),
+      buscarSnapshotAntesDeExcluir: jest
+        .fn()
+        .mockResolvedValue({ descricao: null, detalhes: null }),
     } as unknown as jest.Mocked<AuditLogApplication>;
     interceptor = new AuditLogInterceptor(auditLogApplication);
   });
@@ -109,6 +112,57 @@ describe("AuditLogInterceptor", () => {
         recursoId: "rec-1",
         ip: "127.0.0.1",
       }),
+    );
+  });
+
+  it("busca o snapshot ANTES de excluir (o registro não existe mais depois) e usa o nome/dados retornados", async () => {
+    auditLogApplication.buscarSnapshotAntesDeExcluir.mockResolvedValue({
+      descricao: "Restaurante do Vineco",
+      detalhes: { id: "g1", nome: "Restaurante do Vineco" },
+    });
+    const req: any = {
+      method: "DELETE",
+      user: { id: "admin-1", perfil: "ADMIN" },
+      params: { id: "g1" },
+    };
+
+    await firstValueFrom(
+      interceptor.intercept(
+        criarContext(req, "GastronomiaController"),
+        criarHandler(() => of(undefined)),
+      ),
+    );
+
+    expect(auditLogApplication.buscarSnapshotAntesDeExcluir).toHaveBeenCalledWith(
+      "Gastronomia",
+      "g1",
+    );
+    expect(auditLogApplication.registrar).toHaveBeenCalledWith(
+      expect.objectContaining({
+        descricao: "Restaurante do Vineco",
+        detalhes: { id: "g1", nome: "Restaurante do Vineco" },
+      }),
+    );
+  });
+
+  it("não deixa uma falha ao buscar o snapshot pré-exclusão impedir a exclusão de acontecer", async () => {
+    auditLogApplication.buscarSnapshotAntesDeExcluir.mockRejectedValue(
+      new Error("timeout"),
+    );
+    const req: any = {
+      method: "DELETE",
+      user: { id: "admin-1", perfil: "ADMIN" },
+      params: { id: "g1" },
+    };
+    const handler = criarHandler(() => of({ ok: true }));
+
+    const resultado = await firstValueFrom(
+      interceptor.intercept(criarContext(req), handler),
+    );
+
+    expect(resultado).toEqual({ ok: true });
+    expect(auditLogApplication.registrar).toHaveBeenCalledWith(
+      expect.objectContaining({ descricao: null, detalhes: null }),
     );
   });
 

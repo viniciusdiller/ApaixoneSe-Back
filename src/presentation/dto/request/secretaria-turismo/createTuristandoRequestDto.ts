@@ -20,7 +20,7 @@ export class CreateTuristandoRequestDto {
   @IsString()
   @IsNotEmpty()
   @NormalizeMultipartText()
-  @MaxLength(3000, { message: "O texto deve ter no máximo 3000 caracteres." })
+  @MaxLength(1000, { message: "O texto deve ter no máximo 3000 caracteres." })
   texto!: string;
 
   @ApiProperty({

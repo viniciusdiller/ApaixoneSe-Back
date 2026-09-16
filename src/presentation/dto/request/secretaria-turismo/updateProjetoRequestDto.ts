@@ -21,7 +21,7 @@ export class UpdateProjetoRequestDto {
   @IsString()
   @IsOptional()
   @NormalizeMultipartText()
-  @MaxLength(3000, {
+  @MaxLength(1000, {
     message: "A descrição deve ter no máximo 3000 caracteres.",
   })
   descricao?: string;

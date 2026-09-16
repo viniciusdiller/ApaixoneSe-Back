@@ -8,7 +8,7 @@ export class ForgotPasswordRequestDto {
   })
   @IsEmail({}, { message: "Forneça um e-mail válido" })
   @IsNotEmpty({ message: "O e-mail é obrigatório" })
-  @MaxLength(150, {
+  @MaxLength(191, {
     message: "O e-mail informado é muito longo.",
   })
   email!: string;

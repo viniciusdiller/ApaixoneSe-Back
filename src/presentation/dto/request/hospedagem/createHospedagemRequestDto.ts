@@ -108,7 +108,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(2000, {
+  @MaxLength(300, {
     message: "O texto diferencial informado é muito longo.",
   })
   textoDiferencial!: string;

@@ -19,7 +19,7 @@ export class CreateCatMovelRequestDto {
   @IsString()
   @IsNotEmpty()
   @NormalizeMultipartText()
-  @MaxLength(5000, {
+  @MaxLength(1000, {
     message: "A descrição deve ter no máximo 5000 caracteres.",
   })
   descricao!: string;

@@ -7,7 +7,7 @@ export class CreateCatRequestDto {
   @IsString()
   @IsNotEmpty()
   @NormalizeMultipartText()
-  @MaxLength(5000, { message: "O texto deve ter no máximo 5000 caracteres." })
+  @MaxLength(1000, { message: "O texto deve ter no máximo 5000 caracteres." })
   texto!: string;
 
   @ApiProperty({

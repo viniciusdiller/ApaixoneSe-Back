@@ -40,7 +40,7 @@ export class CreateAtividadeRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O local é obrigatório" })
-  @MaxLength(150, {
+  @MaxLength(191, {
     message: "O local informado é muito longo.",
   })
   local!: string;

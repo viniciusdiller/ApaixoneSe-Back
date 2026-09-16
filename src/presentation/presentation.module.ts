@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
+import { APP_INTERCEPTOR } from "@nestjs/core";
 import { ThrottlerModule } from "@nestjs/throttler";
 import { ApplicationModule } from "../application/application.module";
+import { AuditLogInterceptor } from "./interceptors/auditLog.interceptor";
 import { UserController } from "./controllers/user.controller";
 import { GastronomiaController } from "./controllers/gastronomia.controller";
 import { HospedagemController } from "./controllers/hospedagem.controller";
@@ -19,12 +21,14 @@ import { FiquePorDentroController } from "./controllers/fiquePorDentro.controlle
 import { PontoAguaController } from "./controllers/pontoAgua.controller";
 import { LocalCulturalController } from "./controllers/localCultural.controller";
 import { ClicksController } from "./controllers/clicks.controller";
+import { AuditLogController } from "./controllers/auditLog.controller";
 
 @Module({
   imports: [
     ApplicationModule,
     ThrottlerModule.forRoot([{ name: "clicks", ttl: 60000, limit: 30 }]),
   ],
+  providers: [{ provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor }],
   controllers: [
     UserController,
     GastronomiaController,
@@ -44,6 +48,7 @@ import { ClicksController } from "./controllers/clicks.controller";
     PontoAguaController,
     LocalCulturalController,
     ClicksController,
+    AuditLogController,
   ],
 })
 export class PresentationModule {}

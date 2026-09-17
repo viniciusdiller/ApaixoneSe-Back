@@ -54,7 +54,7 @@ export class CreateGastronomiaRequestDto {
   @ApiProperty({ required: false, example: "Frutos do Mar e Grelhados" })
   @IsString()
   @IsOptional()
-  @MaxLength(80, {
+  @MaxLength(150, {
     message: "A especialidade informada é muito longa.",
   })
   especialidade?: string;

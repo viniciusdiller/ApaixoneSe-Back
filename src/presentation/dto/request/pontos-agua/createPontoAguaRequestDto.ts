@@ -43,7 +43,7 @@ export class CreatePontoAguaRequestDto {
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória." })
   @NormalizeMultipartText()
-  @MaxLength(3000, {
+  @MaxLength(1000, {
     message: "A descrição deve ter no máximo 3000 caracteres.",
   })
   descricao!: string;

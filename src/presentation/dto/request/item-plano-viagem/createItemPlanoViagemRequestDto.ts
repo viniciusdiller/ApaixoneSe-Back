@@ -23,7 +23,7 @@ export class CreateItemPlanoViagemRequestDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(1000, {
+  @MaxLength(300, {
     message: "A anotação informada é muito longa.",
   })
   anotacao?: string;

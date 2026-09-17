@@ -77,7 +77,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(60, {
+  @MaxLength(31, {
     message: "O Instagram informado é muito longo.",
   })
   instagram?: string;
@@ -111,7 +111,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(2000, {
+  @MaxLength(300, {
     message: "O texto diferencial informado é muito longo.",
   })
   textoDiferencial!: string;

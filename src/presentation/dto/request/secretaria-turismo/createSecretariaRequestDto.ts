@@ -10,7 +10,7 @@ export class CreateSecretariaRequestDto {
   @IsString()
   @IsNotEmpty()
   @NormalizeMultipartText()
-  @MaxLength(5000, {
+  @MaxLength(2000, {
     message: "O texto explicativo deve ter no máximo 5000 caracteres.",
   })
   textoExplicativo!: string;

@@ -20,8 +20,8 @@ const CHECAGENS: Checagem[] = [
   { tabela: "pontos_agua", coluna: "dificuldade", limite: 20, rotulo: "nome" },
 
   // Cultura
-  { tabela: "locais_culturais", coluna: "nome", limite: 150, rotulo: "nome" },
-  { tabela: "locais_culturais", coluna: "descricao", limite: 1000, rotulo: "nome" },
+  { tabela: "locais_culturais", coluna: "nome", limite: 60, rotulo: "nome" },
+  { tabela: "locais_culturais", coluna: "descricao", limite: 280, rotulo: "nome" },
   { tabela: "locais_culturais", coluna: "texto", limite: 5000, rotulo: "nome" },
   { tabela: "locais_culturais", coluna: "endereco", limite: 191, rotulo: "nome" },
 

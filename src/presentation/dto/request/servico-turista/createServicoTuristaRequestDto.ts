@@ -38,7 +38,7 @@ export class CreateServicoTuristaRequestDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  @MaxLength(60, {
+  @MaxLength(31, {
     message: "O Instagram informado é muito longo.",
   })
   instagram?: string;
@@ -88,7 +88,7 @@ export class CreateServicoTuristaRequestDto {
   @IsNotEmpty({
     message: "A descrição é obrigatória para este tipo de serviço.",
   })
-  @MaxLength(2000, {
+  @MaxLength(400, {
     message: "A descrição informada é muito longa.",
   })
   descricao?: string;
@@ -110,10 +110,10 @@ export class CreateServicoTuristaRequestDto {
     enum: TipoRoteiro,
     isArray: true,
     required: false,
-    description: "Obrigatório para Guias (pelo menos um roteiro)",
+    description: "Opcional (Roteiros especializados)",
     example: ["DE_PRAIAS", "ECOLOGICO"],
   })
-  @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
+  @IsOptional()
   @Transform(({ value }) => {
     if (value === undefined || value === null || Array.isArray(value)) {
       return value;
@@ -131,9 +131,6 @@ export class CreateServicoTuristaRequestDto {
     }
   })
   @IsArray()
-  @ArrayMinSize(1, {
-    message: "Selecione ao menos um roteiro especializado.",
-  })
   @IsEnum(TipoRoteiro, { each: true })
   roteiros?: TipoRoteiro[];
 

@@ -29,7 +29,7 @@ export class CreateAtividadeRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "A descrição é obrigatória" })
-  @MaxLength(3000, {
+  @MaxLength(2000, {
     message: "A descrição informada é muito longa.",
   })
   descricao!: string;
@@ -40,7 +40,7 @@ export class CreateAtividadeRequestDto {
   })
   @IsString()
   @IsNotEmpty({ message: "O local é obrigatório" })
-  @MaxLength(150, {
+  @MaxLength(191, {
     message: "O local informado é muito longo.",
   })
   local!: string;

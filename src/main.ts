@@ -3,6 +3,7 @@ import { NestFactory } from "@nestjs/core";
 import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import { PrismaExceptionFilter } from "./presentation/filters/prisma-exception.filter";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import * as express from "express";
 import { join } from "path";
@@ -34,6 +35,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  app.useGlobalFilters(new PrismaExceptionFilter());
 
   const config = new DocumentBuilder()
     .setTitle("Apaixone-Se API")

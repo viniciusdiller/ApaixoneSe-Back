@@ -36,7 +36,7 @@ export class CreateUserRequestDto {
   @ApiProperty({ example: "vinicius@email.com", description: "Email válido" })
   @IsEmail({}, { message: "Forneça um email válido" })
   @IsNotEmpty({ message: "O email é obrigatório" })
-  @MaxLength(150, {
+  @MaxLength(191, {
     message: "O e-mail informado é muito longo.",
   })
   email!: string;

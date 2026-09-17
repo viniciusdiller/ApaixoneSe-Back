@@ -110,10 +110,10 @@ export class CreateServicoTuristaRequestDto {
     enum: TipoRoteiro,
     isArray: true,
     required: false,
-    description: "Obrigatório para Guias (pelo menos um roteiro)",
+    description: "Opcional (Roteiros especializados)",
     example: ["DE_PRAIAS", "ECOLOGICO"],
   })
-  @ValidateIf((o) => o.tipo === TipoServicoTurista.GUIA_TURISMO)
+  @IsOptional()
   @Transform(({ value }) => {
     if (value === undefined || value === null || Array.isArray(value)) {
       return value;
@@ -131,9 +131,6 @@ export class CreateServicoTuristaRequestDto {
     }
   })
   @IsArray()
-  @ArrayMinSize(1, {
-    message: "Selecione ao menos um roteiro especializado.",
-  })
   @IsEnum(TipoRoteiro, { each: true })
   roteiros?: TipoRoteiro[];
 

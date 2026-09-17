@@ -14,6 +14,7 @@ export class Gastronomia {
   public documentoPdfUrl: string;
   public logoUrl: string;
   public status: StatusEstabelecimento;
+  public termoAceiteEm?: Date | null;
   public usuarioId: string;
   public createdAt?: Date;
   public updatedAt?: Date;
@@ -40,6 +41,7 @@ export class Gastronomia {
     this.responsavelCpf = props.responsavelCpf;
     this.documentoPdfUrl = props.documentoPdfUrl;
     this.logoUrl = props.logoUrl;
+    this.termoAceiteEm = props.termoAceiteEm;
     this.usuarioId = props.usuarioId;
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;

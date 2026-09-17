@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsEnum,
   IsArray,
+  IsBoolean,
   ArrayMinSize,
   ValidateIf,
   MaxLength,
@@ -16,6 +17,8 @@ import {
   ModalidadeEsporte,
 } from "@prisma/client";
 import { OnlyDigits } from "../../decorators/onlyDigits.decorator";
+import { ToBoolean } from "../../decorators/toBoolean.decorator";
+import { MustAccept } from "../../decorators/mustAccept.decorator";
 
 export class CreateServicoTuristaRequestDto {
   @ApiProperty({ enum: TipoServicoTurista })
@@ -176,6 +179,16 @@ export class CreateServicoTuristaRequestDto {
   })
   @IsEnum(ModalidadeEsporte, { each: true })
   modalidades?: ModalidadeEsporte[];
+
+  @ApiProperty({
+    example: true,
+    description:
+      "Aceite do Termo de Adesão e Autorização de Uso de Imagem e Dados",
+  })
+  @ToBoolean()
+  @IsBoolean()
+  @MustAccept()
+  termoAceite!: boolean;
 
   // ==========================================
   // FICHEIROS (Tratados no Controller, mas documentados aqui)

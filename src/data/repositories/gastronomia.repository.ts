@@ -21,6 +21,7 @@ export class GastronomiaRepository implements IGastronomiaRepository {
         responsavelCpf: gastronomia.responsavelCpf,
         documentoPdfUrl: gastronomia.documentoPdfUrl,
         logoUrl: gastronomia.logoUrl,
+        termoAceiteEm: gastronomia.termoAceiteEm,
         usuarioId: gastronomia.usuarioId,
       },
     });

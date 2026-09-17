@@ -23,6 +23,7 @@ export class HospedagemRepository implements IHospedagemRepository {
         responsavelCpf: hospedagem.responsavelCpf,
         documentoPdfUrl: hospedagem.documentoPdfUrl,
         logoUrl: hospedagem.logoUrl,
+        termoAceiteEm: hospedagem.termoAceiteEm,
         usuarioId: hospedagem.usuarioId,
       },
     });

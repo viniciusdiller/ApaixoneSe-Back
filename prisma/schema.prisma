@@ -31,8 +31,39 @@ model User {
   servicosTurista ServicoTurista[]
   planosViagem    PlanoViagem[]
   visitas         Visita[]
+  auditLogs       AuditLog[]
 
   @@map("usuarios")
+}
+
+enum AcaoAuditoria {
+  APROVAR
+  REJEITAR
+  EDITAR
+  EXCLUIR
+}
+
+// Registro de acoes administrativas (aceitar/editar/excluir qualquer
+// recurso). Alimentado por um interceptor global - nao ha escrita manual
+// nos controllers/services de cada recurso.
+model AuditLog {
+  id        String        @id @default(uuid())
+  acao      AcaoAuditoria
+  recurso   String // Nome do recurso afetado (ex: "Gastronomia", "User")
+  recursoId String? // Id do registro afetado, quando aplicavel
+  descricao String? // Rotulo legivel (ex: nome/titulo do registro)
+  detalhes  Json? // Corpo da requisicao, sem campos sensiveis (senha/token)
+  ip        String?
+
+  adminId   String
+  admin     User   @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  adminNome String // Snapshot do nome do admin no momento da acao
+
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([recurso, recursoId])
+  @@map("audit_logs")
 }
 
 enum AuthTokenType {

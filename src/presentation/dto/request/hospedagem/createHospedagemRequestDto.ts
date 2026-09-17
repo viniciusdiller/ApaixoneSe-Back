@@ -74,7 +74,7 @@ export class CreateHospedagemRequestDto {
   })
   @IsOptional()
   @IsString()
-  @MaxLength(60, {
+  @MaxLength(31, {
     message: "O Instagram informado é muito longo.",
   })
   instagram?: string;

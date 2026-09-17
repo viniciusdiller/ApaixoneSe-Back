@@ -15,6 +15,7 @@ export class Hospedagem {
   documentoPdfUrl!: string;
   logoUrl!: string;
   status!: StatusEstabelecimento;
+  termoAceiteEm?: Date | null;
   usuarioId!: string;
   createdAt?: Date;
   updatedAt?: Date;

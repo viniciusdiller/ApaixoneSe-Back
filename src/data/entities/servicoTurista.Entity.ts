@@ -19,6 +19,7 @@ export class ServicoTurista {
   logoUrl?: string | null;
   fotoUrl?: string | null;
   status!: StatusEstabelecimento;
+  termoAceiteEm?: Date | null;
   usuarioId!: string;
   createdAt?: Date;
   updatedAt?: Date;

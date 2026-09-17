@@ -204,6 +204,9 @@ model Gastronomia {
   // Controle de Qualidade
   status StatusEstabelecimento @default(PENDENTE)
 
+  // Prova de consentimento do Termo de Adesão (carimbada pelo servidor)
+  termoAceiteEm DateTime?
+
   // ==========================================
   // RELACIONAMENTO: QUEM É O DONO? (OWNERSHIP)
   // ==========================================
@@ -237,6 +240,9 @@ model Hospedagem {
   logoUrl         String
 
   status StatusEstabelecimento @default(PENDENTE)
+
+  // Prova de consentimento do Termo de Adesão (carimbada pelo servidor)
+  termoAceiteEm DateTime?
 
   usuarioId String
   usuario   User   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
@@ -281,6 +287,9 @@ model ServicoTurista {
   logoUrl          String?
   fotoUrl          String?
   status           StatusEstabelecimento @default(PENDENTE)
+
+  // Prova de consentimento do Termo de Adesão (carimbada pelo servidor)
+  termoAceiteEm DateTime?
 
   // O Dono do Serviço
   usuarioId String

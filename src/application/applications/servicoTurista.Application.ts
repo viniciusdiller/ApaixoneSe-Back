@@ -33,6 +33,11 @@ export class ServicoTuristaApplication {
     delete dadosCriacao.comprovante;
     delete dadosCriacao.documentoCnpj;
 
+    // O DTO já garante (via @MustAccept) que termoAceite === true antes de
+    // chegar aqui. O timestamp de consentimento é carimbado pelo servidor,
+    // nunca aceito vindo do cliente, para servir como prova de aceite.
+    delete dadosCriacao.termoAceite;
+
     if (dadosCriacao.validade) {
       dadosCriacao.validade = new Date(dadosCriacao.validade);
     }
@@ -44,6 +49,7 @@ export class ServicoTuristaApplication {
       fotoUrl,
       comprovanteUrl,
       documentoCnpjUrl,
+      termoAceiteEm: new Date(),
     });
 
     return this.repo.save(novo);

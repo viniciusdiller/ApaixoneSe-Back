@@ -25,6 +25,11 @@ export class HospedagemApplication {
     delete dadosCriacao.logo;
     delete dadosCriacao.documentoPdf;
 
+    // O DTO já garante (via @MustAccept) que termoAceite === true antes de
+    // chegar aqui. O timestamp de consentimento é carimbado pelo servidor,
+    // nunca aceito vindo do cliente, para servir como prova de aceite.
+    delete dadosCriacao.termoAceite;
+
     if (dadosCriacao.tags) {
       if (typeof dadosCriacao.tags === "string") {
         try {
@@ -44,6 +49,7 @@ export class HospedagemApplication {
       usuarioId,
       logoUrl,
       documentoPdfUrl: pdfUrl,
+      termoAceiteEm: new Date(),
     });
 
     const salva = await this.repo.save(nova);
@@ -170,6 +176,7 @@ export class HospedagemApplication {
       documentoPdfUrl: h.documentoPdfUrl,
       logoUrl: h.logoUrl,
       status: h.status,
+      termoAceiteEm: h.termoAceiteEm,
       usuarioId: h.usuarioId,
       createdAt: h.createdAt!,
       updatedAt: h.updatedAt!,

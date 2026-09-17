@@ -4,9 +4,12 @@ import {
   IsNotEmpty,
   IsOptional,
   IsDateString,
+  IsBoolean,
   MaxLength,
 } from "class-validator";
 import { OnlyDigits } from "../../decorators/onlyDigits.decorator";
+import { ToBoolean } from "../../decorators/toBoolean.decorator";
+import { MustAccept } from "../../decorators/mustAccept.decorator";
 
 export class CreateGastronomiaRequestDto {
   @ApiProperty({ example: "Vinecao Restaurante" })
@@ -84,6 +87,16 @@ export class CreateGastronomiaRequestDto {
     message: "O CPF do responsável informado é muito longo.",
   })
   responsavelCpf!: string;
+
+  @ApiProperty({
+    example: true,
+    description:
+      "Aceite do Termo de Adesão e Autorização de Uso de Imagem e Dados",
+  })
+  @ToBoolean()
+  @IsBoolean()
+  @MustAccept()
+  termoAceite!: boolean;
 
   // Os Ficheiros:
   @ApiProperty({

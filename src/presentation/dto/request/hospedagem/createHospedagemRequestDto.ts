@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import {
   ArrayMaxSize,
   IsArray,
+  IsBoolean,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -9,6 +10,8 @@ import {
 } from "class-validator";
 import { Transform } from "class-transformer";
 import { OnlyDigits } from "../../decorators/onlyDigits.decorator";
+import { ToBoolean } from "../../decorators/toBoolean.decorator";
+import { MustAccept } from "../../decorators/mustAccept.decorator";
 
 export class CreateHospedagemRequestDto {
   @ApiProperty({
@@ -146,6 +149,16 @@ export class CreateHospedagemRequestDto {
     message: "O CPF do responsável informado é muito longo.",
   })
   responsavelCpf!: string;
+
+  @ApiProperty({
+    example: true,
+    description:
+      "Aceite do Termo de Adesão e Autorização de Uso de Imagem e Dados",
+  })
+  @ToBoolean()
+  @IsBoolean()
+  @MustAccept()
+  termoAceite!: boolean;
 
   @ApiProperty({
     type: "string",

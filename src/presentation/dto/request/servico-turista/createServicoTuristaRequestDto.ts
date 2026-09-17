@@ -88,7 +88,7 @@ export class CreateServicoTuristaRequestDto {
   @IsNotEmpty({
     message: "A descrição é obrigatória para este tipo de serviço.",
   })
-  @MaxLength(2000, {
+  @MaxLength(400, {
     message: "A descrição informada é muito longa.",
   })
   descricao?: string;

@@ -9,7 +9,7 @@ const itemPlanoInclude = {
   evento: { select: { id: true, titulo: true, data: true, local: true } },
   atividade: { select: { id: true, titulo: true, local: true, roteiro: true } },
   servicoTurista: { select: { id: true, nome: true, tipo: true, logoUrl: true } },
-  planoViagem: { select: { id: true, titulo: true } },
+  planoViagem: { select: { id: true, titulo: true, usuarioId: true } },
 } as const;
 
 @Injectable()

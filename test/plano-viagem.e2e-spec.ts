@@ -220,6 +220,14 @@ describe("Plano de Viagem - Privacidade (e2e)", () => {
       }).expect(400);
     });
 
+    it("16. ano absurdo (202022) é rejeitado (400)", async () => {
+      await postar({ ...base, dataFim: "202022-01-12" }).expect(400);
+      await postar({
+        ...base,
+        itens: [{ ...itemOk(), dataHoraAgendada: "+202022-01-11T15:00:00.000Z" }],
+      }).expect(400);
+    });
+
     it("15. usuarioId enviado no body é rejeitado (400)", async () => {
       await postar({ ...base, usuarioId: "qualquer" }).expect(400);
     });

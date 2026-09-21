@@ -10,6 +10,7 @@ import { ItemPlanoViagem } from "../../data/entities/itemPlanoViagem.Entity";
 import {
   validarApenasUmVinculo,
   validarDentroDoPeriodo,
+  validarAnoRazoavel,
   ehViolacaoDeFk,
 } from "../helpers/itemPlanoViagem.validators";
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
@@ -35,6 +36,7 @@ export class ItemPlanoViagemApplication {
     }
 
     validarApenasUmVinculo(data);
+    validarAnoRazoavel(data.dataHoraAgendada);
     validarDentroDoPeriodo(
       data.dataHoraAgendada,
       plano.dataInicio,

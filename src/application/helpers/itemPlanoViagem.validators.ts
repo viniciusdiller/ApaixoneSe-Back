@@ -46,3 +46,19 @@ export function ehViolacaoDeFk(e: unknown): boolean {
     e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003"
   );
 }
+
+const ANO_MIN = 2000;
+const ANO_MAX = 2100;
+
+/** Rejeita datas absurdas (ex.: ano 202022) que o banco aceitaria ou estouraria em 500. */
+export function validarAnoRazoavel(...datas: Array<Date | string | undefined>) {
+  for (const d of datas) {
+    if (d == null) continue;
+    const ano = new Date(d).getUTCFullYear();
+    if (Number.isNaN(ano) || ano < ANO_MIN || ano > ANO_MAX) {
+      throw new BadRequestException(
+        `As datas devem estar entre os anos ${ANO_MIN} e ${ANO_MAX}.`,
+      );
+    }
+  }
+}

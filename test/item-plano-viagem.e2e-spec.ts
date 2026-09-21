@@ -92,6 +92,20 @@ describe("Item Plano de Viagem - Multi-Relações (e2e)", () => {
     itemCriadoId = resposta.body.id;
   });
 
+  it("2b. POST /item-plano-viagem - Falha se a data estiver fora do período do plano (400)", () => {
+    return request(app.getHttpServer())
+      .post("/item-plano-viagem")
+      .set("Authorization", `Bearer ${tokenTurista}`)
+      .send({
+        planoViagemId: planoId,
+        dataHoraAgendada: new Date(
+          Date.now() + 30 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
+        eventoId: eventoFalsoId,
+      })
+      .expect(400);
+  });
+
   it("3. DELETE /item-plano-viagem/:id - Apaga o item do cronograma (204)", () => {
     return request(app.getHttpServer())
       .delete(`/item-plano-viagem/${itemCriadoId}`)

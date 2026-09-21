@@ -8,7 +8,7 @@ import {
   MaxLength,
 } from "class-validator";
 
-export class CreateItemPlanoViagemRequestDto {
+export class ItemPlanoViagemInlineDto {
   @ApiProperty({
     example: "2026-12-16T20:00:00Z",
     description: "Data e hora marcada para esta atividade",
@@ -27,11 +27,6 @@ export class CreateItemPlanoViagemRequestDto {
     message: "A anotação informada é muito longa.",
   })
   anotacao?: string;
-
-  @ApiProperty({ description: "ID do Plano de Viagem (Pai)" })
-  @IsUUID()
-  @IsNotEmpty()
-  planoViagemId!: string;
 
   // ==========================================
   // IDs OPCIONAIS (Apenas UM deve ser enviado)
@@ -53,4 +48,11 @@ export class CreateItemPlanoViagemRequestDto {
   @IsOptional()
   @IsUUID()
   servicoTuristaId?: string;
+}
+
+export class CreateItemPlanoViagemRequestDto extends ItemPlanoViagemInlineDto {
+  @ApiProperty({ description: "ID do Plano de Viagem (Pai)" })
+  @IsUUID()
+  @IsNotEmpty()
+  planoViagemId!: string;
 }

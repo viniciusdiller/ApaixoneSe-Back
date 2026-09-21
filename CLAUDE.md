@@ -140,6 +140,12 @@ estabelecimento, feature completamente separada).
   revisitar com SQL raw se a base de dados crescer muito.
 - `401` sem token, `403` se `perfil !== 'ADMIN'`.
 
+## Plano de Viagem — criação atômica com itens
+
+- `POST /api/plano-viagem` aceita `itens[]` (máx. 50) e cria plano + itens numa única transação (create aninhado do Prisma em `planoViagem.repository.ts`). `usuarioId` vem sempre do JWT.
+- Validações compartilhadas com `POST /api/item-plano-viagem` em `application/helpers/itemPlanoViagem.validators.ts`: exatamente um vínculo por item e data dentro do período do plano (folga de fuso: -1 dia / +2 dias; o Front faz a checagem exata). FK inexistente (P2003) vira 400 genérico.
+- Os e2e (`test/*.e2e-spec.ts`) não sobem o `main.ts`: quem depende do `ValidationPipe` precisa registrá-lo no `beforeAll`.
+
 ## Scripts úteis
 
 - `npm run dev` — ts-node-dev com respawn.

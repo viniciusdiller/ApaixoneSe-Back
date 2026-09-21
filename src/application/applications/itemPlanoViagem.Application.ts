@@ -7,6 +7,12 @@ import {
 import { ItemPlanoViagemRepository } from "../../data/repositories/itemPlanoViagem.repository";
 import { PlanoViagemRepository } from "../../data/repositories/planoViagem.repository";
 import { ItemPlanoViagem } from "../../data/entities/itemPlanoViagem.Entity";
+import {
+  validarApenasUmVinculo,
+  validarDentroDoPeriodo,
+  validarAnoRazoavel,
+  ehViolacaoDeFk,
+} from "../helpers/itemPlanoViagem.validators";
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
 
 @Injectable()
@@ -15,22 +21,6 @@ export class ItemPlanoViagemApplication {
     private readonly repo: ItemPlanoViagemRepository,
     private readonly planoRepo: PlanoViagemRepository,
   ) {}
-
-  private validarApenasUmVinculo(data: any) {
-    const idsPreenchidos = [
-      data.gastronomiaId,
-      data.hospedagemId,
-      data.eventoId,
-      data.atividadeId,
-      data.servicoTuristaId,
-    ].filter((id) => id != null && id !== "");
-
-    if (idsPreenchidos.length !== 1) {
-      throw new BadRequestException(
-        "Um item do roteiro deve estar associado a EXATAMENTE UM local (Hospedagem, Gastronomia, Evento, Atividade ou Serviço).",
-      );
-    }
-  }
 
   async create(data: any, usuarioLogado: IUsuarioLogado) {
     const plano = await this.planoRepo.findById(data.planoViagemId);
@@ -45,10 +35,21 @@ export class ItemPlanoViagemApplication {
       );
     }
 
-    this.validarApenasUmVinculo(data);
+    validarApenasUmVinculo(data);
+    validarAnoRazoavel(data.dataHoraAgendada);
+    validarDentroDoPeriodo(
+      data.dataHoraAgendada,
+      plano.dataInicio,
+      plano.dataFim,
+    );
 
     const novo = new ItemPlanoViagem(data);
-    return this.repo.save(novo);
+    try {
+      return await this.repo.save(novo);
+    } catch (e) {
+      if (ehViolacaoDeFk(e)) throw new BadRequestException("Item inválido.");
+      throw e;
+    }
   }
 
   async delete(id: string, usuarioLogado: IUsuarioLogado) {

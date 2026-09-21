@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { INestApplication } from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import request from "supertest";
 import { AppModule } from "./../src/app.module";
 import { PrismaService } from "./../src/data/providers/db/prisma.Service";
@@ -14,6 +14,7 @@ describe("Plano de Viagem - Privacidade (e2e)", () => {
   let tokenTuristaB: string;
   let tokenAdmin: string;
   let planoDoTuristaA_Id: string;
+  let eventoId: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -24,6 +25,14 @@ describe("Plano de Viagem - Privacidade (e2e)", () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    // Mesmo pipe global do main.ts
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        transform: true,
+        forbidNonWhitelisted: true,
+      }),
+    );
     await app.init();
 
     prisma = app.get(PrismaService);
@@ -56,6 +65,16 @@ describe("Plano de Viagem - Privacidade (e2e)", () => {
         perfil: "ADMIN",
       },
     });
+
+    const evento = await prisma.eventos.create({
+      data: {
+        titulo: "Evento Plano",
+        descricao: "...",
+        data: new Date(),
+        local: "...",
+      },
+    });
+    eventoId = evento.id;
 
     tokenTuristaA = jwtService.sign({ sub: userA.id, perfil: userA.perfil });
     tokenTuristaB = jwtService.sign({ sub: userB.id, perfil: userB.perfil });
@@ -118,12 +137,109 @@ describe("Plano de Viagem - Privacidade (e2e)", () => {
       .expect(204);
   });
 
+  describe("Criação atômica com itens", () => {
+    const base = {
+      titulo: "Com itens",
+      dataInicio: "2027-01-10",
+      dataFim: "2027-01-12",
+    };
+    const itemOk = () => ({
+      dataHoraAgendada: "2027-01-11T15:00:00.000Z",
+      eventoId,
+    });
+    const postar = (body: object) =>
+      request(app.getHttpServer())
+        .post("/plano-viagem")
+        .set("Authorization", `Bearer ${tokenTuristaA}`)
+        .send(body);
+    const contarPlanos = () =>
+      prisma.planoViagem.count({ where: { titulo: "Com itens" } });
+
+    afterEach(async () => {
+      await prisma.planoViagem.deleteMany({ where: { titulo: "Com itens" } });
+    });
+
+    it("7. cria plano com itens numa única chamada (201)", async () => {
+      const r = await postar({ ...base, itens: [itemOk(), itemOk()] }).expect(
+        201,
+      );
+      expect(r.body.itens).toHaveLength(2);
+    });
+
+    it("8. plano sem itens continua funcionando (201)", async () => {
+      const r = await postar(base).expect(201);
+      expect(r.body.itens).toHaveLength(0);
+    });
+
+    it("9. item com dois vínculos falha e NÃO cria o plano (400)", async () => {
+      await postar({
+        ...base,
+        itens: [
+          itemOk(),
+          { ...itemOk(), gastronomiaId: "11111111-1111-4111-8111-111111111111" },
+        ],
+      }).expect(400);
+      expect(await contarPlanos()).toBe(0);
+    });
+
+    it("10. item sem vínculo falha (400)", async () => {
+      await postar({
+        ...base,
+        itens: [{ dataHoraAgendada: "2027-01-11T15:00:00.000Z" }],
+      }).expect(400);
+      expect(await contarPlanos()).toBe(0);
+    });
+
+    it("11. item fora do período falha (400)", async () => {
+      await postar({
+        ...base,
+        itens: [{ ...itemOk(), dataHoraAgendada: "2027-03-01T15:00:00.000Z" }],
+      }).expect(400);
+      expect(await contarPlanos()).toBe(0);
+    });
+
+    it("12. dataFim anterior à dataInicio falha (400)", async () => {
+      await postar({ ...base, dataInicio: "2027-01-12", dataFim: "2027-01-10" })
+        .expect(400);
+    });
+
+    it("13. local inexistente falha com 400 e não cria o plano", async () => {
+      await postar({
+        ...base,
+        itens: [
+          { ...itemOk(), eventoId: "22222222-2222-4222-8222-222222222222" },
+        ],
+      }).expect(400);
+      expect(await contarPlanos()).toBe(0);
+    });
+
+    it("14. mais de 50 itens falha (400)", async () => {
+      await postar({
+        ...base,
+        itens: Array.from({ length: 51 }, itemOk),
+      }).expect(400);
+    });
+
+    it("16. ano absurdo (202022) é rejeitado (400)", async () => {
+      await postar({ ...base, dataFim: "202022-01-12" }).expect(400);
+      await postar({
+        ...base,
+        itens: [{ ...itemOk(), dataHoraAgendada: "+202022-01-11T15:00:00.000Z" }],
+      }).expect(400);
+    });
+
+    it("15. usuarioId enviado no body é rejeitado (400)", async () => {
+      await postar({ ...base, usuarioId: "qualquer" }).expect(400);
+    });
+  });
+
   afterAll(async () => {
     await prisma.user.deleteMany({
       where: {
         email: { in: ["a@turista.com", "b@turista.com", "admin@roteiro.com"] },
       },
     });
+    await prisma.eventos.delete({ where: { id: eventoId } });
     await app.close();
   });
 });

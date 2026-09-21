@@ -27,9 +27,22 @@ export class PlanoViagemRepository implements IPlanoViagemRepository {
         dataInicio: new Date(plano.dataInicio),
         dataFim: new Date(plano.dataFim),
         usuarioId: plano.usuarioId,
+        // create aninhado do Prisma roda numa transação: falhou um item, nada é criado
+        itens: {
+          create: (plano.itens ?? []).map((i) => ({
+            dataHoraAgendada: new Date(i.dataHoraAgendada),
+            anotacao: i.anotacao,
+            gastronomiaId: i.gastronomiaId,
+            hospedagemId: i.hospedagemId,
+            eventoId: i.eventoId,
+            atividadeId: i.atividadeId,
+            servicoTuristaId: i.servicoTuristaId,
+          })),
+        },
       },
+      include: itensInclude,
     });
-    return new PlanoViagem(criado);
+    return new PlanoViagem(criado as any);
   }
 
   async findByUsuarioId(usuarioId: string): Promise<PlanoViagem[]> {

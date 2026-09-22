@@ -63,6 +63,7 @@ model AuditLog {
 
   @@index([adminId])
   @@index([recurso, recursoId])
+  @@index([createdAt])
   @@map("audit_logs")
 }
 

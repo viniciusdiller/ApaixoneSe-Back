@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { PassportModule } from "@nestjs/passport";
+import { ScheduleModule } from "@nestjs/schedule";
 import { DataModule } from "../data/data.module";
 import { UserApplication } from "./applications/user.Application";
 import { GastronomiaApplication } from "./applications/gastronomia.Application";
@@ -22,15 +23,18 @@ import { ClickCounterApplication } from "./applications/clickCounter.Application
 import { AuditLogApplication } from "./applications/auditLog.Application";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { EmailService } from "./services/email.service";
+import { AuditCleanupService } from "./services/auditCleanup.service";
 
 @Module({
   imports: [
     DataModule,
     PassportModule.register({ defaultStrategy: "jwt" }),
+    ScheduleModule.forRoot(),
   ],
   providers: [
     JwtStrategy,
     EmailService,
+    AuditCleanupService,
     UserApplication,
     GastronomiaApplication,
     HospedagemApplication,

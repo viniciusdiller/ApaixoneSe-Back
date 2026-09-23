@@ -40,9 +40,12 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "sharp": "^0.34.5",
-    "swagger-jsdoc": "^6.2.8",
+    "sharp": "^0.35.4",
     "swagger-ui-express": "^5.0.1"
+  },
+  "overrides": {
+    "multer": "2.4.0",
+    "deepmerge-ts": "8.0.2"
   },
   "devDependencies": {
     "@nestjs/testing": "^11.1.22",
@@ -55,7 +58,6 @@
     "@types/nodemailer": "^8.0.1",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^7.2.0",
-    "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
     "jest": "^30.4.2",
     "prisma": "^6.19.3",

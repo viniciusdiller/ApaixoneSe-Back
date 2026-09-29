@@ -3,6 +3,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsDateString,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -93,6 +94,15 @@ export class CreateHospedagemRequestDto {
     message: "O site informado é muito longo.",
   })
   site?: string;
+
+  @ApiProperty({
+    example: "2027-12-31T23:59:59Z",
+    description: "Data de validade do comprovante Cadastur (Apenas Admin)",
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+  validade?: string;
 
   @ApiProperty({
     example: "Av. Brasil, 1000",

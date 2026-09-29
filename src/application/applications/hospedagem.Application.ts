@@ -44,6 +44,11 @@ export class HospedagemApplication {
       dadosCriacao.tags = [];
     }
 
+    // 🛑 CONVERSÃO DA DATA
+    if (dadosCriacao.validade) {
+      dadosCriacao.validade = new Date(dadosCriacao.validade);
+    }
+
     const nova = new Hospedagem({
       ...dadosCriacao,
       usuarioId,
@@ -134,6 +139,16 @@ export class HospedagemApplication {
     if (logoUrl) dadosAtualizacao.logoUrl = logoUrl;
     if (pdfUrl) dadosAtualizacao.documentoPdfUrl = pdfUrl;
 
+    // 🛑 REGRA DE SEGURANÇA: Só o ADMIN pode alterar a validade
+    if (dadosAtualizacao.validade && usuarioLogado.perfil !== "ADMIN") {
+      delete dadosAtualizacao.validade;
+    }
+
+    // Se passou pela barreira e a validade existe, converte para Date
+    if (dadosAtualizacao.validade) {
+      dadosAtualizacao.validade = new Date(dadosAtualizacao.validade);
+    }
+
     const atualizado = await this.repo.update(id, dadosAtualizacao);
 
     return this.mapToResponseDto(atualizado);
@@ -168,6 +183,7 @@ export class HospedagemApplication {
       tags: h.tags,
       instagram: h.instagram,
       site: h.site,
+      validade: h.validade,
       endereco: h.endereco,
       textoDiferencial: h.textoDiferencial,
       cnpj: h.cnpj,

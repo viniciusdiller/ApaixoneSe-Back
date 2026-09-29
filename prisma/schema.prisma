@@ -230,6 +230,7 @@ model Hospedagem {
   tags             Json?
   instagram        String?
   site             String?
+  validade         DateTime?
   endereco         String
   textoDiferencial String  @db.Text
 

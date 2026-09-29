@@ -7,6 +7,7 @@ export class Hospedagem {
   tags?: string[] | any;
   instagram?: string | null;
   site?: string | null;
+  validade?: Date | null;
   endereco!: string;
   textoDiferencial!: string;
   cnpj!: string;

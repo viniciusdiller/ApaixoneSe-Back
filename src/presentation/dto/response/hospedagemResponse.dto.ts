@@ -26,6 +26,9 @@ export class HospedagemResponseDto {
   })
   site?: string | null;
 
+  @ApiProperty({ example: "2027-12-31T23:59:59Z", required: false, nullable: true })
+  validade?: Date | null;
+
   @ApiProperty({ example: "Rua Jaime Warde de Carvalho, 9, 2" })
   endereco!: string;
 

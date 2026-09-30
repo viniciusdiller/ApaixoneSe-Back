@@ -217,6 +217,21 @@ export class UserApplication {
   async update(id: string, data: any, usuarioLogado: IUsuarioLogado) {
     if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id)
       throw new ForbiddenException("Sem permissão.");
+
+    // Regra de negócio: filtra campos editáveis conforme o perfil do usuário logado
+    const CAMPOS_EDITAVEIS: Record<string, string[]> = {
+      USUARIO: ["nome", "email", "usuario", "senha"],
+      PARCEIRO: ["nome", "email", "usuario", "senha"],
+      ADMIN: ["nome", "email", "usuario", "senha", "perfil", "active"],
+    };
+
+    const permitidos = CAMPOS_EDITAVEIS[usuarioLogado.perfil] || [];
+    const camposNaoPermitidos = Object.keys(data).filter((c) => !permitidos.includes(c));
+
+    if (camposNaoPermitidos.length > 0) {
+      throw new BadRequestException("Campo não permitido.");
+    }
+
     const user = await this.userRepository.findById(id);
     if (!user) throw new NotFoundException("Usuário não encontrado.");
     if (data.senha) {

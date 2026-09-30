@@ -28,6 +28,7 @@ import { ForgotPasswordRequestDto } from "../dto/request/auth/forgotPasswordRequ
 import { ResetPasswordRequestDto } from "../dto/request/auth/resetPasswordRequest.dto";
 import { VerifyEmailRequestDto } from "../dto/request/auth/verifyEmailRequest.dto";
 import { SetActiveRequestDto } from "../dto/request/users/setActiveRequestDto";
+import { UpdateUserRequestDto } from "../dto/request/users/updateUserRequestDto";
 
 @ApiTags("Autenticação e Usuários")
 @Controller("users")
@@ -74,7 +75,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Atualiza um usuário (Dono ou Admin)" })
-  async update(@Param("id") id: string, @Body() dto: any, @Req() req: any) {
+  async update(@Param("id") id: string, @Body() dto: UpdateUserRequestDto, @Req() req: any) {
     return this.userApplication.update(id, dto, req.user);
   }
 

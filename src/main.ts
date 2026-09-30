@@ -34,14 +34,25 @@ async function bootstrap() {
       transform: true,
       forbidNonWhitelisted: true,
       exceptionFactory: (errors: ValidationError[]) => {
-        const messages = errors.map((error) => {
-          if (error.constraints && error.constraints.whitelistValidation) {
-            console.warn(`[Segurança] Tentativa de envio de campo não permitido: ${error.property}`);
-            return "Campo não permitido.";
-          }
-          return Object.values(error.constraints || {}).join(", ");
-        });
-        return new BadRequestException({ message: messages });
+        const hasWhitelistError = errors.some(
+          (err) => err.constraints && err.constraints.whitelistValidation,
+        );
+
+        if (hasWhitelistError) {
+          errors.forEach((err) => {
+            if (err.constraints?.whitelistValidation) {
+              console.warn(
+                `[Segurança] Tentativa de envio de campo não permitido: ${err.property}`,
+              );
+            }
+          });
+          return new BadRequestException("Campo não permitido.");
+        }
+
+        const messages = errors.flatMap((error) =>
+          Object.values(error.constraints || {}),
+        );
+        return new BadRequestException(messages);
       },
     }),
   );

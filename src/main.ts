@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { NestFactory } from "@nestjs/core";
-import { ValidationPipe } from "@nestjs/common";
+import { ValidationPipe, ValidationError, BadRequestException } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { PrismaExceptionFilter } from "./presentation/filters/prisma-exception.filter";
@@ -33,6 +33,27 @@ async function bootstrap() {
       whitelist: true,
       transform: true,
       forbidNonWhitelisted: true,
+      exceptionFactory: (errors: ValidationError[]) => {
+        const hasWhitelistError = errors.some(
+          (err) => err.constraints && err.constraints.whitelistValidation,
+        );
+
+        if (hasWhitelistError) {
+          errors.forEach((err) => {
+            if (err.constraints?.whitelistValidation) {
+              console.warn(
+                `[Segurança] Tentativa de envio de campo não permitido: ${err.property}`,
+              );
+            }
+          });
+          return new BadRequestException("Campo não permitido.");
+        }
+
+        const messages = errors.flatMap((error) =>
+          Object.values(error.constraints || {}),
+        );
+        return new BadRequestException(messages);
+      },
     }),
   );
 

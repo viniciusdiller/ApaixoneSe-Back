@@ -242,6 +242,16 @@ export class UserApplication {
     return this.mapToResponseDto(atualizado);
   }
 
+  // Usado pelo PerfilAdminGuard: retorna o perfil e o status atuais do usuário
+  // direto do banco, para não confiar apenas no perfil gravado no JWT.
+  async obterSituacaoAtual(
+    id: string,
+  ): Promise<{ perfil: IUsuarioLogado["perfil"]; active: boolean } | null> {
+    const user = await this.userRepository.findById(id);
+    if (!user) return null;
+    return { perfil: user.perfil as IUsuarioLogado["perfil"], active: user.active };
+  }
+
   async delete(id: string, usuarioLogado: IUsuarioLogado): Promise<void> {
     if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id)
       throw new ForbiddenException("Sem permissão.");

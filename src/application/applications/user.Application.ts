@@ -142,7 +142,9 @@ export class UserApplication {
     const secret = process.env.JWT_SECRET;
     if (!secret) throw new InternalServerErrorException("Erro de configuração.");
 
-    const token = jwt.sign({ id: user.id, perfil: user.perfil }, secret, { expiresIn: "1d" });
+    // Sessao de ADMIN e mais curta (5h) por ter privilegio elevado.
+    const expiresIn = user.perfil === "ADMIN" ? "5h" : "1d";
+    const token = jwt.sign({ id: user.id, perfil: user.perfil }, secret, { expiresIn });
 
     return { token, user: this.mapToResponseDto(user) };
   }

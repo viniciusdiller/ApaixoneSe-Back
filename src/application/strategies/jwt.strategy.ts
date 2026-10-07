@@ -28,8 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       );
     }
 
-    // 3. Fonte da verdade e o banco: o perfil do token pode estar desatualizado
-    // (conta rebaixada/desativada/removida depois da emissao do token).
+    // 3. Perfil e status vêm do banco (o token pode estar desatualizado)
     const situacao = await this.userApplication.obterSituacaoAtual(
       String(usuarioId),
     );
@@ -40,7 +39,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       );
     }
 
-    // 4. Retornamos o utilizador com o perfil ATUAL do banco para o req.user
+    // 4. Retorna o utilizador com o perfil atual
     return {
       id: String(usuarioId),
       perfil: situacao.perfil,

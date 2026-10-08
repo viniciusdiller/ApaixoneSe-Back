@@ -244,7 +244,20 @@ export class UserApplication {
     return this.mapToResponseDto(atualizado);
   }
 
-  // Usado pelo PerfilAdminGuard: retorna o perfil e o status atuais do usuário
+  // Edição do próprio perfil (PUT /users/:id): só o dono, nem admin edita outro por aqui
+  async updateProprio(id: string, data: any, usuarioLogado: IUsuarioLogado) {
+    if (usuarioLogado.id !== id) throw new ForbiddenException("Sem permissão.");
+    return this.update(id, data, usuarioLogado);
+  }
+
+  // Edição administrativa (PUT /users/:id/admin): aceita perfil e active
+  async updateAdmin(id: string, data: any, usuarioLogado: IUsuarioLogado) {
+    if (usuarioLogado.perfil !== "ADMIN")
+      throw new ForbiddenException("Apenas administradores.");
+    return this.update(id, data, usuarioLogado);
+  }
+
+  // Usado pela JwtStrategy: retorna o perfil e o status atuais do usuário
   // direto do banco, para não confiar apenas no perfil gravado no JWT.
   async obterSituacaoAtual(
     id: string,

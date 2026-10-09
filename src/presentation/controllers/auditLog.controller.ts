@@ -14,7 +14,7 @@ export class AuditLogController {
   @ApiBearerAuth()
   @ApiOperation({
     summary:
-      "Lista o historico de acoes administrativas - aprovar/editar/excluir (apenas Admin)",
+      "Lista o historico de acoes administrativas - aprovar/editar/excluir (Administrador)",
   })
   async listar(
     @Req() req: any,

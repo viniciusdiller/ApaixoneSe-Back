@@ -22,14 +22,14 @@ export class ItemPlanoViagemController {
   constructor(private readonly app: ItemPlanoViagemApplication) {}
 
   @Post()
-  @ApiOperation({ summary: "Adicionar uma Atividade/Local ao Roteiro" })
+  @ApiOperation({ summary: "Adiciona uma Atividade/Local ao Roteiro" })
   async create(@Body() dto: CreateItemPlanoViagemRequestDto, @Req() req: any) {
     return this.app.create(dto, req.user);
   }
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: "Remover uma Atividade/Local do Roteiro" })
+  @ApiOperation({ summary: "Remove uma Atividade/Local do Roteiro" })
   async delete(@Param("id") id: string, @Req() req: any) {
     return this.app.delete(id, req.user);
   }

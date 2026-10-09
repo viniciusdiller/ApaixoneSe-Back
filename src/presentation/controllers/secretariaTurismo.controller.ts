@@ -47,7 +47,7 @@ export class SecretariaTurismoController {
   @ApiBearerAuth()
   @ApiConsumes("multipart/form-data")
   @ApiOperation({
-    summary: "Cria a base da Secretaria de Turismo (Admin apenas)",
+    summary: "Cria a base da Secretaria de Turismo (Administrador)",
   })
   @UseInterceptors(
     FileFieldsInterceptor([{ name: "video", maxCount: 1 }], {
@@ -179,7 +179,7 @@ export class SecretariaTurismoController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Reordena os blocos Turistando em lote (Admin apenas)",
+    summary: "Reordena os blocos Turistando em lote (Administrador)",
   })
   async reorderTuristandos(
     @Body() dto: ReorderTuristandoRequestDto,

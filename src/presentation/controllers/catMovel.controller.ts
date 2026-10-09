@@ -48,7 +48,7 @@ export class CatMovelController {
   @ApiBearerAuth()
   @ApiOperation({
     summary:
-      "Configura o CAT Móvel pela primeira vez com imagem ou vídeo (Apenas Admin). Retorna 409 se já existir.",
+      "Configura o CAT Móvel pela primeira vez com imagem ou vídeo (Administrador). Retorna 409 se já existir.",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateCatMovelRequestDto })
@@ -85,7 +85,7 @@ export class CatMovelController {
   @ApiBearerAuth()
   @ApiOperation({
     summary:
-      "Atualiza os dados do CAT Móvel (Apenas Admin). Pode trocar título, descrição ou mídia.",
+      "Atualiza os dados do CAT Móvel (Administrador). Pode trocar título, descrição ou mídia.",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: UpdateCatMovelRequestDto })

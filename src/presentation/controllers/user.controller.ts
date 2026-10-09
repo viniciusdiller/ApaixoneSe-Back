@@ -59,7 +59,7 @@ export class UserController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Lista todos os usuários (Apenas Admin)" })
+  @ApiOperation({ summary: "Lista todos os usuários (Administrador)" })
   async findAll(@Req() req: any) {
     return this.userApplication.findAll(req.user);
   }
@@ -67,7 +67,7 @@ export class UserController {
   @Get(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Busca um usuário por ID (Dono ou Admin)" })
+  @ApiOperation({ summary: "Busca um usuário por ID (Dono ou Administrador)" })
   async findById(@Param("id") id: string, @Req() req: any) {
     return this.userApplication.findById(id, req.user);
   }
@@ -120,7 +120,7 @@ export class UserController {
   @Delete(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Exclui um usuário (Dono ou Admin)" })
+  @ApiOperation({ summary: "Exclui um usuário (Dono ou Administrador)" })
   async delete(@Param("id") id: string, @Req() req: any) {
     return this.userApplication.delete(id, req.user);
   }

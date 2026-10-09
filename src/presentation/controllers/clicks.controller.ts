@@ -39,7 +39,7 @@ export class ClicksController {
   @Get("stats")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Consulta agregados de cliques, paginado (apenas ADMIN)" })
+  @ApiOperation({ summary: "Consulta agregados de cliques, paginado (Administrador)" })
   @ApiResponse({ status: 200, type: ClickStatsPaginatedResponseDto })
   async stats(
     @Req() req: any,

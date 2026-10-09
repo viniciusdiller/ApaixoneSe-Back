@@ -48,7 +48,7 @@ export class LocalCulturalController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Cadastra um novo local cultural (Apenas Admin)" })
+  @ApiOperation({ summary: "Cadastra um novo local cultural (Administrador)" })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateLocalCulturalRequestDto })
   @ApiResponse({ status: 201, type: LocalCulturalResponseDto })
@@ -85,7 +85,7 @@ export class LocalCulturalController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Atualiza os dados de um local cultural pelo ID (Apenas Admin)",
+    summary: "Atualiza os dados de um local cultural pelo ID (Administrador)",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: UpdateLocalCulturalRequestDto })
@@ -116,7 +116,7 @@ export class LocalCulturalController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Deleta um local cultural pelo ID (Apenas Admin)" })
+  @ApiOperation({ summary: "Deleta um local cultural pelo ID (Administrador)" })
   async delete(@Param("id") id: string, @Req() req: any): Promise<void> {
     return this.app.delete(id, req.user);
   }

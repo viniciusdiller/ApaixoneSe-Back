@@ -68,7 +68,7 @@ export class EventoController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Cria um novo evento (Apenas Admin)" })
+  @ApiOperation({ summary: "Cria um novo evento (Administrador)" })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateEventoRequestDto })
   @ApiResponse({ status: 201, type: EventoResponseDto })
@@ -126,7 +126,7 @@ export class EventoController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Atualiza os dados de um evento pelo ID (Apenas Admin)",
+    summary: "Atualiza os dados de um evento pelo ID (Administrador)",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: UpdateEventoRequestDto })
@@ -167,7 +167,7 @@ export class EventoController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Exclui um evento pelo ID (Apenas Admin)" })
+  @ApiOperation({ summary: "Exclui um evento pelo ID (Administrador)" })
   @ApiResponse({ status: 204, description: "Evento excluído com sucesso" })
   async delete(@Param("id") id: string, @Req() req: any): Promise<void> {
     return this.eventoApplication.delete(id, req.user);

@@ -54,7 +54,7 @@ export class ServicoTuristaController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Registar novo Serviço (Guia, Agência, Esporte ou Locadora)",
+    summary: "Registra novo Serviço (Guia, Agência, Esporte ou Locadora)",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateServicoTuristaRequestDto })

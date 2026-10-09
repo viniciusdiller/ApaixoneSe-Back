@@ -46,7 +46,7 @@ export class CasaDeCambioController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Cria uma Casa de Câmbio (Apenas Admin)" })
+  @ApiOperation({ summary: "Cria uma Casa de Câmbio (Administrador)" })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateCasaDeCambioRequestDto })
   @UseInterceptors(
@@ -82,7 +82,7 @@ export class CasaDeCambioController {
   @Put(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Atualiza uma Casa de Câmbio (Apenas Admin)" })
+  @ApiOperation({ summary: "Atualiza uma Casa de Câmbio (Administrador)" })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: UpdateCasaDeCambioRequestDto })
   @UseInterceptors(
@@ -113,7 +113,7 @@ export class CasaDeCambioController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Deleta uma Casa de Câmbio (Apenas Admin)" })
+  @ApiOperation({ summary: "Deleta uma Casa de Câmbio (Administrador)" })
   async delete(@Param("id") id: string, @Req() req: any) {
     return this.app.delete(id, req.user);
   }

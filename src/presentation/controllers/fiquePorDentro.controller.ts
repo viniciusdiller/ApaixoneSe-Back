@@ -39,7 +39,7 @@ export class FiquePorDentroController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Adiciona uma imagem na posição indicada ("1" a "5"). Apenas Admin.' })
+  @ApiOperation({ summary: "Adiciona uma imagem na posição indicada (\"1\" a \"5\") (Administrador)" })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateFiquePorDentroRequestDto })
   @UseInterceptors(FileInterceptor("imagem", { storage: memoryStorage() }))
@@ -55,7 +55,7 @@ export class FiquePorDentroController {
 
   // ── GET /fique-por-dentro  →  Lista todas (público) ─────────────────────────
   @Get()
-  @ApiOperation({ summary: "Retorna todas as imagens da galeria em ordem (1 a 5). Público." })
+  @ApiOperation({ summary: "Retorna todas as imagens da galeria em ordem (1 a 5) (Público)" })
   async findAll() {
     return this.app.findAll();
   }
@@ -67,7 +67,7 @@ export class FiquePorDentroController {
   @ApiBearerAuth()
   @ApiOperation({
     summary:
-      "Troca as posições (ordens) de dois itens atomicamente via transação. Apenas Admin.",
+      "Troca as posições (ordens) de dois itens atomicamente via transação. (Administrador)",
   })
   async swap(@Body() dto: SwapFiquePorDentroRequestDto, @Req() req: any) {
     return this.app.swap(dto.idA, dto.idB, req.user);
@@ -77,7 +77,7 @@ export class FiquePorDentroController {
   @Put(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Substitui a imagem de um item pelo ID. Apenas Admin." })
+  @ApiOperation({ summary: "Substitui a imagem de um item pelo ID (Administrador)" })
   @ApiConsumes("multipart/form-data")
   @UseInterceptors(FileInterceptor("imagem", { storage: memoryStorage() }))
   async update(
@@ -94,7 +94,7 @@ export class FiquePorDentroController {
   @HttpCode(204)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Remove uma imagem específica da galeria pelo ID. Apenas Admin." })
+  @ApiOperation({ summary: "Remove uma imagem específica da galeria pelo ID (Administrador)" })
   async delete(@Param("id") id: string, @Req() req: any) {
     await this.app.delete(id, req.user);
   }

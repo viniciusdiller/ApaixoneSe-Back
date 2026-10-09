@@ -50,7 +50,7 @@ export class HospedagemController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Registar nova hospedagem" })
+  @ApiOperation({ summary: "Registra nova hospedagem" })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateHospedagemRequestDto })
   @UseInterceptors(

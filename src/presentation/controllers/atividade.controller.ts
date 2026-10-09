@@ -1,4 +1,4 @@
-﻿import {
+import {
   Controller,
   Post,
   Get,
@@ -51,7 +51,7 @@ export class AtividadeController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Cadastra uma nova atividade num roteiro (Apenas Admin)",
+    summary: "Cadastra uma nova atividade num roteiro (Administrador)",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateAtividadeRequestDto })
@@ -104,7 +104,7 @@ export class AtividadeController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Atualiza os dados de uma atividade pelo ID (Apenas Admin)",
+    summary: "Atualiza os dados de uma atividade pelo ID (Administrador)",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: UpdateAtividadeRequestDto })
@@ -139,7 +139,7 @@ export class AtividadeController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Deleta uma atividade pelo ID (Apenas Admin)" })
+  @ApiOperation({ summary: "Deleta uma atividade pelo ID (Administrador)" })
   async delete(@Param("id") id: string, @Req() req: any): Promise<void> {
     return this.atividadeApplication.delete(id, req.user);
   }

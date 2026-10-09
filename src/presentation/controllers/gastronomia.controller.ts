@@ -53,7 +53,7 @@ export class GastronomiaController {
   // ==========================================
   @Post()
   @UseGuards(JwtAuthGuard) // 🔒 Agora é obrigatório estar logado para criar
-  @ApiOperation({ summary: "Registar novo estabelecimento" })
+  @ApiOperation({ summary: "Registra novo estabelecimento" })
   @ApiBearerAuth() // Adiciona o cadeado no Swagger
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateGastronomiaRequestDto })

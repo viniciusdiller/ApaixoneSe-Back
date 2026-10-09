@@ -75,7 +75,7 @@ export class UserController {
   @Put(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Atualiza o próprio perfil (nome, usuário, email, senha)" })
+  @ApiOperation({ summary: "Atualiza os dados do próprio usuário" })
   async update(@Param("id") id: string, @Body() dto: UpdateUserRequestDto, @Req() req: any) {
     return this.userApplication.updateProprio(id, dto, req.user);
   }
@@ -87,7 +87,7 @@ export class UserController {
   @Put(":id/admin")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Atualiza qualquer usuário, inclusive perfil e active (apenas Admin)" })
+  @ApiOperation({ summary: "Atualiza dados de um usuário (Administrador)" })
   async updateAdmin(
     @Param("id") id: string,
     @Body() dto: AdminUpdateUserRequestDto,
@@ -103,7 +103,7 @@ export class UserController {
   @Patch(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Altera o status active do usuário (apenas Admin)" })
+  @ApiOperation({ summary: "Altera o status de acesso do usuário (Administrador)" })
   @ApiResponse({
     status: 200,
     description: "Status atualizado com sucesso",

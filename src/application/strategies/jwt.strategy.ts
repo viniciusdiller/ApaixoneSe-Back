@@ -2,10 +2,11 @@ import { ExtractJwt, Strategy } from "passport-jwt";
 import { PassportStrategy } from "@nestjs/passport";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { IUsuarioLogado } from "../../data/interfaces/iUsuarioLogado.Interface";
+import { UserApplication } from "../applications/user.Application";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor() {
+  constructor(private readonly userApplication: UserApplication) {
     super({
       // Ensina o NestJS a procurar o Token no Header "Authorization: Bearer <token>"
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -27,10 +28,21 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       );
     }
 
-    // 3. Retornamos o utilizador para o NestJS injetar no req.user
+    // 3. Perfil e status vêm do banco (o token pode estar desatualizado)
+    const situacao = await this.userApplication.obterSituacaoAtual(
+      String(usuarioId),
+    );
+
+    if (!situacao || !situacao.active) {
+      throw new UnauthorizedException(
+        "Sessão inválida. Faça login novamente.",
+      );
+    }
+
+    // 4. Retorna o utilizador com o perfil atual
     return {
       id: String(usuarioId),
-      perfil: payload.perfil || "USUARIO", // Se não vier perfil, assume USUARIO por segurança
+      perfil: situacao.perfil,
     };
   }
 }

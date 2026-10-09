@@ -25,7 +25,7 @@ export class EventoPrincipalController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Cria o evento principal (Apenas ADMIN)" })
+  @ApiOperation({ summary: "Cria o evento principal (Administrador)" })
   async create(@Body() dto: CreateEventoPrincipalRequestDto, @Req() req: any) {
     return this.app.create(dto, req.user);
   }
@@ -45,7 +45,7 @@ export class EventoPrincipalController {
   @Put(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Atualiza o evento principal (Apenas ADMIN)" })
+  @ApiOperation({ summary: "Atualiza o evento principal (Administrador)" })
   async update(
     @Param("id") id: string,
     @Body() dto: UpdateEventoPrincipalRequestDto,
@@ -58,7 +58,7 @@ export class EventoPrincipalController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Deleta um evento principal (Apenas ADMIN)" })
+  @ApiOperation({ summary: "Deleta um evento principal (Administrador)" })
   async delete(@Param("id") id: string, @Req() req: any) {
     return this.app.delete(id, req.user);
   }

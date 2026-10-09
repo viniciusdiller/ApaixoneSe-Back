@@ -49,7 +49,7 @@ export class CatController {
   @ApiBearerAuth()
   @ApiOperation({
     summary:
-      "Configura o CAT pela primeira vez com múltiplas imagens e 1 vídeo (Apenas Admin). Retorna 409 se já existir.",
+      "Configura o CAT pela primeira vez com múltiplas imagens e 1 vídeo (Administrador). Retorna 409 se já existir.",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreateCatRequestDto })
@@ -80,7 +80,7 @@ export class CatController {
   @Put()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Atualiza as informações do CAT (Apenas Admin)" })
+  @ApiOperation({ summary: "Atualiza as informações do CAT (Administrador)" })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: UpdateCatRequestDto })
   @UseInterceptors(uploadInterceptor)

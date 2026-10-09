@@ -29,6 +29,7 @@ import { ResetPasswordRequestDto } from "../dto/request/auth/resetPasswordReques
 import { VerifyEmailRequestDto } from "../dto/request/auth/verifyEmailRequest.dto";
 import { SetActiveRequestDto } from "../dto/request/users/setActiveRequestDto";
 import { UpdateUserRequestDto } from "../dto/request/users/updateUserRequestDto";
+import { AdminUpdateUserRequestDto } from "../dto/request/users/adminUpdateUserRequestDto";
 
 @ApiTags("Autenticação e Usuários")
 @Controller("users")
@@ -58,7 +59,7 @@ export class UserController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Lista todos os usuários (Apenas Admin)" })
+  @ApiOperation({ summary: "Lista todos os usuários (Administrador)" })
   async findAll(@Req() req: any) {
     return this.userApplication.findAll(req.user);
   }
@@ -66,7 +67,7 @@ export class UserController {
   @Get(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Busca um usuário por ID (Dono ou Admin)" })
+  @ApiOperation({ summary: "Busca um usuário por ID (Dono ou Administrador)" })
   async findById(@Param("id") id: string, @Req() req: any) {
     return this.userApplication.findById(id, req.user);
   }
@@ -74,9 +75,25 @@ export class UserController {
   @Put(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Atualiza um usuário (Dono ou Admin)" })
+  @ApiOperation({ summary: "Atualiza os dados do próprio usuário" })
   async update(@Param("id") id: string, @Body() dto: UpdateUserRequestDto, @Req() req: any) {
-    return this.userApplication.update(id, dto, req.user);
+    return this.userApplication.updateProprio(id, dto, req.user);
+  }
+
+  // ---------------------------------------------------------
+  // ROTA: PUT /users/:id/admin  — edição completa (perfil e active)
+  // Fica neste controller para o log de auditoria manter o recurso "User"
+  // ---------------------------------------------------------
+  @Put(":id/admin")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Atualiza dados de um usuário (Administrador)" })
+  async updateAdmin(
+    @Param("id") id: string,
+    @Body() dto: AdminUpdateUserRequestDto,
+    @Req() req: any,
+  ) {
+    return this.userApplication.updateAdmin(id, dto, req.user);
   }
 
   // ---------------------------------------------------------
@@ -86,7 +103,7 @@ export class UserController {
   @Patch(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Altera o status active do usuário (apenas Admin)" })
+  @ApiOperation({ summary: "Altera o status de acesso do usuário (Administrador)" })
   @ApiResponse({
     status: 200,
     description: "Status atualizado com sucesso",
@@ -97,13 +114,13 @@ export class UserController {
     @Body() dto: SetActiveRequestDto,
     @Req() req: any,
   ) {
-    return this.userApplication.update(id, { active: dto.active }, req.user);
+    return this.userApplication.updateAdmin(id, { active: dto.active }, req.user);
   }
 
   @Delete(":id")
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Exclui um usuário (Dono ou Admin)" })
+  @ApiOperation({ summary: "Exclui um usuário (Dono ou Administrador)" })
   async delete(@Param("id") id: string, @Req() req: any) {
     return this.userApplication.delete(id, req.user);
   }

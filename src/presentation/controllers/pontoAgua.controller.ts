@@ -50,7 +50,7 @@ export class PontoAguaController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Cadastra uma nova praia ou lagoa (Apenas Admin)" })
+  @ApiOperation({ summary: "Cadastra uma nova praia ou lagoa (Administrador)" })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: CreatePontoAguaRequestDto })
   @ApiResponse({ status: 201, type: PontoAguaResponseDto })
@@ -106,7 +106,7 @@ export class PontoAguaController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: "Atualiza os dados de uma praia/lagoa pelo ID (Apenas Admin)",
+    summary: "Atualiza os dados de uma praia/lagoa pelo ID (Administrador)",
   })
   @ApiConsumes("multipart/form-data")
   @ApiBody({ type: UpdatePontoAguaRequestDto })
@@ -137,7 +137,7 @@ export class PontoAguaController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Deleta uma praia/lagoa pelo ID (Apenas Admin)" })
+  @ApiOperation({ summary: "Deleta uma praia/lagoa pelo ID (Administrador)" })
   async delete(@Param("id") id: string, @Req() req: any): Promise<void> {
     return this.app.delete(id, req.user);
   }

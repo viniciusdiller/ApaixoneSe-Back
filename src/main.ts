@@ -46,7 +46,7 @@ async function bootstrap() {
               );
             }
           });
-          return new BadRequestException("Campo não permitido.");
+          return new BadRequestException("Campo inválido.");
         }
 
         const messages = errors.flatMap((error) =>

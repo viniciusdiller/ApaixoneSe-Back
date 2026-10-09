@@ -184,7 +184,7 @@ describe("UserController - rotas de atualização (PUT próprio, PUT admin, PATC
     });
 
     it("usuário comum não consegue alterar o próprio active", async () => {
-      await patch(tokenUsuario, { active: true }).expect(400);
+      await patch(tokenUsuario, { active: true }).expect(403);
       expect(userRepository.update).not.toHaveBeenCalled();
     });
   });

@@ -216,24 +216,7 @@ export class UserApplication {
     return this.mapToResponseDto(user);
   }
 
-  async update(id: string, data: any, usuarioLogado: IUsuarioLogado) {
-    if (usuarioLogado.perfil !== "ADMIN" && usuarioLogado.id !== id)
-      throw new ForbiddenException("Sem permissão.");
-
-    // Regra de negócio: filtra campos editáveis conforme o perfil do usuário logado
-    const CAMPOS_EDITAVEIS: Record<string, string[]> = {
-      USUARIO: ["nome", "email", "usuario", "senha"],
-      PARCEIRO: ["nome", "email", "usuario", "senha"],
-      ADMIN: ["nome", "email", "usuario", "senha", "perfil", "active"],
-    };
-
-    const permitidos = CAMPOS_EDITAVEIS[usuarioLogado.perfil] || [];
-    const camposNaoPermitidos = Object.keys(data).filter((c) => !permitidos.includes(c));
-
-    if (camposNaoPermitidos.length > 0) {
-      throw new BadRequestException("Campo não permitido.");
-    }
-
+  private async update(id: string, data: any) {
     const user = await this.userRepository.findById(id);
     if (!user) throw new NotFoundException("Usuário não encontrado.");
     if (data.senha) {
@@ -247,14 +230,14 @@ export class UserApplication {
   // Edição do próprio perfil (PUT /users/:id): só o dono, nem admin edita outro por aqui
   async updateProprio(id: string, data: any, usuarioLogado: IUsuarioLogado) {
     if (usuarioLogado.id !== id) throw new ForbiddenException("Sem permissão.");
-    return this.update(id, data, usuarioLogado);
+    return this.update(id, data);
   }
 
   // Edição administrativa (PUT /users/:id/admin): aceita perfil e active
   async updateAdmin(id: string, data: any, usuarioLogado: IUsuarioLogado) {
     if (usuarioLogado.perfil !== "ADMIN")
       throw new ForbiddenException("Apenas administradores.");
-    return this.update(id, data, usuarioLogado);
+    return this.update(id, data);
   }
 
   // Usado pela JwtStrategy: retorna o perfil e o status atuais do usuário

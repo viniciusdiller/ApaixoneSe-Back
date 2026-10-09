@@ -114,7 +114,7 @@ export class UserController {
     @Body() dto: SetActiveRequestDto,
     @Req() req: any,
   ) {
-    return this.userApplication.update(id, { active: dto.active }, req.user);
+    return this.userApplication.updateAdmin(id, { active: dto.active }, req.user);
   }
 
   @Delete(":id")

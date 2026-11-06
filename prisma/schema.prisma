@@ -406,6 +406,20 @@ model SecretariaTurismoProjeto {
   @@map("secretaria_turismo_projeto")
 }
 
+model BandeiraAzul {
+  id        String   @id @default(uuid())
+  titulo    String
+  subtitulo String?  @db.VarChar(300)
+  // URLs das fotos do carrossel do banner, na ordem de exibição
+  bannerImagens Json?
+  // Array de blocos de conteúdo (text | image | video), na ordem de exibição
+  blocos    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("bandeira_azul")
+}
+
 model PlanoViagem {
   id         String   @id @default(uuid())
   titulo     String

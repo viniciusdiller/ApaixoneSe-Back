@@ -16,6 +16,7 @@ import { CatApplication } from "./applications/cat.Application";
 import { CatMovelApplication } from "./applications/catMovel.Application";
 import { CasaDeCambioApplication } from "./applications/casaDeCambio.Application";
 import { SecretariaTurismoApplication } from "./applications/secretariaTurismo.Application";
+import { BandeiraAzulApplication } from "./applications/bandeiraAzul.Application";
 import { FiquePorDentroApplication } from "./applications/fiquePorDentro.Application";
 import { PontoAguaApplication } from "./applications/pontoAgua.Application";
 import { LocalCulturalApplication } from "./applications/localCultural.Application";
@@ -49,6 +50,7 @@ import { AuditCleanupService } from "./services/auditCleanup.service";
     CatMovelApplication,
     CasaDeCambioApplication,
     SecretariaTurismoApplication,
+    BandeiraAzulApplication,
     FiquePorDentroApplication,
     PontoAguaApplication,
     LocalCulturalApplication,
@@ -70,6 +72,7 @@ import { AuditCleanupService } from "./services/auditCleanup.service";
     CatMovelApplication,
     CasaDeCambioApplication,
     SecretariaTurismoApplication,
+    BandeiraAzulApplication,
     FiquePorDentroApplication,
     PontoAguaApplication,
     LocalCulturalApplication,

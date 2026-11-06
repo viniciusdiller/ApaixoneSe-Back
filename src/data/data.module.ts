@@ -14,6 +14,7 @@ import { CatRepository } from "./repositories/cat.repository";
 import { CatMovelRepository } from "./repositories/catMovel.repository";
 import { CasaDeCambioRepository } from "./repositories/casaDeCambio.repository";
 import { SecretariaTurismoRepository } from "./repositories/secretariaTurismo.repository";
+import { BandeiraAzulRepository } from "./repositories/bandeiraAzul.repository";
 import { FiquePorDentroRepository } from "./repositories/fiquePorDentro.repository";
 import { AuthTokenRepository } from "./repositories/authToken.repository";
 import { PontoAguaRepository } from "./repositories/pontoAgua.repository";
@@ -37,6 +38,7 @@ const repositories = [
   CatMovelRepository,
   CasaDeCambioRepository,
   SecretariaTurismoRepository,
+  BandeiraAzulRepository,
   FiquePorDentroRepository,
   AuthTokenRepository,
   PontoAguaRepository,

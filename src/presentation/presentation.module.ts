@@ -17,6 +17,7 @@ import { CatController } from "./controllers/cat.controller";
 import { CatMovelController } from "./controllers/catMovel.controller";
 import { CasaDeCambioController } from "./controllers/casaDeCambio.controller";
 import { SecretariaTurismoController } from "./controllers/secretariaTurismo.controller";
+import { BandeiraAzulController } from "./controllers/bandeiraAzul.controller";
 import { FiquePorDentroController } from "./controllers/fiquePorDentro.controller";
 import { PontoAguaController } from "./controllers/pontoAgua.controller";
 import { LocalCulturalController } from "./controllers/localCultural.controller";
@@ -44,6 +45,7 @@ import { AuditLogController } from "./controllers/auditLog.controller";
     CatMovelController,
     CasaDeCambioController,
     SecretariaTurismoController,
+    BandeiraAzulController,
     FiquePorDentroController,
     PontoAguaController,
     LocalCulturalController,

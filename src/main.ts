@@ -4,6 +4,7 @@ import { ValidationPipe, ValidationError, BadRequestException } from "@nestjs/co
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { PrismaExceptionFilter } from "./presentation/filters/prisma-exception.filter";
+import { AllExceptionsFilter } from "./presentation/filters/all-exceptions.filter";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import * as express from "express";
 import { join } from "path";
@@ -57,7 +58,9 @@ async function bootstrap() {
     }),
   );
 
-  app.useGlobalFilters(new PrismaExceptionFilter());
+  // No NestJS os filtros globais são avaliados na ordem inversa do array:
+  // PrismaExceptionFilter (específico) roda primeiro; AllExceptionsFilter é o fallback.
+  app.useGlobalFilters(new AllExceptionsFilter(), new PrismaExceptionFilter());
 
   const config = new DocumentBuilder()
     .setTitle("Apaixone-Se API")

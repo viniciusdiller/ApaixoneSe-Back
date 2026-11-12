@@ -25,14 +25,17 @@ import {
 } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../guards/jwt-autg.guard";
 import { memoryStorage } from "multer";
-import sharp from "sharp";
-import * as fs from "fs";
-import * as path from "path";
 import { ServicoTuristaApplication } from "../../application/applications/servicoTurista.Application";
 import { CreateServicoTuristaRequestDto } from "../dto/request/servico-turista/createServicoTuristaRequestDto";
 import { UpdateServicoTuristaRequestDto } from "../dto/request/servico-turista/updateServicoTuristaRequestDto";
 import { TipoServicoTurista } from "@prisma/client";
-import { randomUUID } from "crypto";
+import {
+  ArquivoPreparado,
+  prepararImagemWebp,
+  prepararImagemOuPdf,
+  gravarArquivos,
+  removerArquivos,
+} from "../helpers/upload.helper";
 
 function sanitizarNomePasta(nome: string): string {
   return nome
@@ -40,6 +43,74 @@ function sanitizarNomePasta(nome: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-zA-Z0-9]/g, "_")
     .toLowerCase();
+}
+
+interface ArquivosServicoTurista {
+  logo?: Express.Multer.File[];
+  foto?: Express.Multer.File[];
+  comprovante?: Express.Multer.File[];
+  documentoCnpj?: Express.Multer.File[];
+}
+
+interface ResultadoPreparoArquivos {
+  arquivos: ArquivoPreparado[];
+  logoUrl?: string;
+  fotoUrl?: string;
+  comprovanteUrl?: string;
+  documentoCnpjUrl?: string;
+}
+
+async function prepararArquivosServicoTurista(
+  nomePastaLimpo: string,
+  files?: ArquivosServicoTurista,
+): Promise<ResultadoPreparoArquivos> {
+  const logoFile = files?.logo?.[0];
+  const fotoFile = files?.foto?.[0];
+  const comprovanteFile = files?.comprovante?.[0];
+  const documentoCnpjFile = files?.documentoCnpj?.[0];
+
+  const baseUrl = `/uploads/servico_turista/${nomePastaLimpo}`;
+  const arquivos: ArquivoPreparado[] = [];
+  let logoUrl: string | undefined;
+  let fotoUrl: string | undefined;
+  let comprovanteUrl: string | undefined;
+  let documentoCnpjUrl: string | undefined;
+
+  if (logoFile) {
+    const prep = await prepararImagemWebp(logoFile, "Logo", "logo", 500);
+    arquivos.push(prep);
+    logoUrl = `${baseUrl}/${prep.nomeArquivo}`;
+  }
+
+  if (fotoFile) {
+    const prep = await prepararImagemWebp(fotoFile, "Foto", "foto", 500);
+    arquivos.push(prep);
+    fotoUrl = `${baseUrl}/${prep.nomeArquivo}`;
+  }
+
+  if (comprovanteFile) {
+    const prep = await prepararImagemOuPdf(
+      comprovanteFile,
+      "Comprovante Cadastur",
+      "comprovante",
+      800,
+    );
+    arquivos.push(prep);
+    comprovanteUrl = `${baseUrl}/${prep.nomeArquivo}`;
+  }
+
+  if (documentoCnpjFile) {
+    const prep = await prepararImagemOuPdf(
+      documentoCnpjFile,
+      "Documento do CNPJ",
+      "documento_cnpj",
+      800,
+    );
+    arquivos.push(prep);
+    documentoCnpjUrl = `${baseUrl}/${prep.nomeArquivo}`;
+  }
+
+  return { arquivos, logoUrl, fotoUrl, comprovanteUrl, documentoCnpjUrl };
 }
 
 @ApiTags("Serviços para o Turista")
@@ -72,13 +143,7 @@ export class ServicoTuristaController {
   async create(
     @Body() dto: CreateServicoTuristaRequestDto,
     @Req() req: any,
-    @UploadedFiles()
-    files?: {
-      logo?: Express.Multer.File[];
-      foto?: Express.Multer.File[];
-      comprovante?: Express.Multer.File[];
-      documentoCnpj?: Express.Multer.File[];
-    },
+    @UploadedFiles() files?: ArquivosServicoTurista,
   ) {
     const logoFile = files?.logo?.[0];
     const fotoFile = files?.foto?.[0];
@@ -97,89 +162,38 @@ export class ServicoTuristaController {
     }
     if (dto.tipo !== TipoServicoTurista.ESPORTE_LAZER && !comprovanteFile) {
       throw new BadRequestException(
-        "O comprovante do Cadastur (Imagem ou PDF) é obrigatório para este tipo de serviço.",
+        "O comprovante do Cadastur (PDF ou imagem JPG, PNG ou WEBP) é obrigatório para este tipo de serviço.",
       );
     }
     if (dto.tipo === TipoServicoTurista.ESPORTE_LAZER && !documentoCnpjFile) {
       throw new BadRequestException(
-        "O documento do CNPJ (Imagem ou PDF) é obrigatório para Esporte/Lazer.",
+        "O documento do CNPJ (PDF ou imagem JPG, PNG ou WEBP) é obrigatório para Esporte/Lazer.",
       );
     }
 
-    // Usando o novo padrão de pastas simplificado
     const nomePastaLimpo = sanitizarNomePasta(dto.nome);
     const uploadDir = `./uploads/servico_turista/${nomePastaLimpo}`;
 
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+    // 1. Valida e converte TODOS os arquivos em memória antes de tocar no disco
+    const { arquivos, logoUrl, fotoUrl, comprovanteUrl, documentoCnpjUrl } =
+      await prepararArquivosServicoTurista(nomePastaLimpo, files);
 
-    let logoUrl, fotoUrl, comprovanteUrl, documentoCnpjUrl;
+    // 2. Grava de forma atômica (cria a pasta se não existir)
+    const caminhosGravados = gravarArquivos(uploadDir, arquivos);
 
-    if (logoFile) {
-      const logoNome = `logo_${Date.now()}.webp`; 
-      await sharp(logoFile.buffer)
-        .resize(500)
-        .webp({ quality: 80 })
-        .toFile(path.join(uploadDir, logoNome));
-      logoUrl = `/uploads/servico_turista/${nomePastaLimpo}/${logoNome}`;
+    try {
+      return await this.app.create(
+        dto,
+        req.user.id,
+        logoUrl,
+        fotoUrl,
+        comprovanteUrl,
+        documentoCnpjUrl,
+      );
+    } catch (err) {
+      removerArquivos(caminhosGravados);
+      throw err;
     }
-
-    if (fotoFile) {
-      const fotoNome = `foto_${Date.now()}.webp`; 
-      await sharp(fotoFile.buffer)
-        .resize(500)
-        .webp({ quality: 80 })
-        .toFile(path.join(uploadDir, fotoNome));
-      fotoUrl = `/uploads/servico_turista/${nomePastaLimpo}/${fotoNome}`;
-    }
-
-    if (comprovanteFile) {
-      const ext = path.extname(comprovanteFile.originalname).toLowerCase();
-
-      if (ext === ".pdf") {
-        const comprovanteNome = `comprovante_${Date.now()}.pdf`; 
-        fs.writeFileSync(
-          path.join(uploadDir, comprovanteNome),
-          comprovanteFile.buffer,
-        );
-        comprovanteUrl = `/uploads/servico_turista/${nomePastaLimpo}/${comprovanteNome}`;
-      } else {
-        const comprovanteNome = `comprovante_${Date.now()}.webp`; 
-        await sharp(comprovanteFile.buffer)
-          .resize(800)
-          .webp({ quality: 80 })
-          .toFile(path.join(uploadDir, comprovanteNome));
-        comprovanteUrl = `/uploads/servico_turista/${nomePastaLimpo}/${comprovanteNome}`;
-      }
-    }
-
-    if (documentoCnpjFile) {
-      const ext = path.extname(documentoCnpjFile.originalname).toLowerCase();
-
-      if (ext === ".pdf") {
-        const documentoCnpjNome = `documento_cnpj_${Date.now()}.pdf`;
-        fs.writeFileSync(
-          path.join(uploadDir, documentoCnpjNome),
-          documentoCnpjFile.buffer,
-        );
-        documentoCnpjUrl = `/uploads/servico_turista/${nomePastaLimpo}/${documentoCnpjNome}`;
-      } else {
-        const documentoCnpjNome = `documento_cnpj_${Date.now()}.webp`;
-        await sharp(documentoCnpjFile.buffer)
-          .resize(800)
-          .webp({ quality: 80 })
-          .toFile(path.join(uploadDir, documentoCnpjNome));
-        documentoCnpjUrl = `/uploads/servico_turista/${nomePastaLimpo}/${documentoCnpjNome}`;
-      }
-    }
-
-    return this.app.create(
-      dto,
-      req.user.id,
-      logoUrl,
-      fotoUrl,
-      comprovanteUrl,
-      documentoCnpjUrl,
-    );
   }
 
   // ==========================================
@@ -221,102 +235,41 @@ export class ServicoTuristaController {
     @Param("id") id: string,
     @Body() dto: UpdateServicoTuristaRequestDto,
     @Req() req: any,
-    @UploadedFiles()
-    files?: {
-      logo?: Express.Multer.File[];
-      foto?: Express.Multer.File[];
-      comprovante?: Express.Multer.File[];
-      documentoCnpj?: Express.Multer.File[];
-    },
+    @UploadedFiles() files?: ArquivosServicoTurista,
   ) {
     const usuarioLogado = req.user;
-    const existente = await this.app.findById(id);
+
+    // 1. Checa existência e permissão ANTES de processar ou gravar arquivos
+    const existente = await this.app.obterExistenteAutorizadoParaEdicao(
+      id,
+      usuarioLogado,
+      dto.status,
+    );
 
     const nomePastaLimpo = sanitizarNomePasta(dto.nome || existente.nome);
     const uploadDir = `./uploads/servico_turista/${nomePastaLimpo}`;
 
-    let logoUrl: string | undefined;
-    let fotoUrl: string | undefined;
-    let comprovanteUrl: string | undefined;
-    let documentoCnpjUrl: string | undefined;
-    const logoFile = files?.logo?.[0];
-    const fotoFile = files?.foto?.[0];
-    const comprovanteFile = files?.comprovante?.[0];
-    const documentoCnpjFile = files?.documentoCnpj?.[0];
+    // 2. Valida e converte TODOS os arquivos em memória antes de tocar no disco
+    const { arquivos, logoUrl, fotoUrl, comprovanteUrl, documentoCnpjUrl } =
+      await prepararArquivosServicoTurista(nomePastaLimpo, files);
 
-    if (logoFile) {
-      if (!fs.existsSync(uploadDir))
-        fs.mkdirSync(uploadDir, { recursive: true });
-      const logoNome = `logo_${Date.now()}.webp`;
-      await sharp(logoFile.buffer)
-        .resize(500)
-        .webp({ quality: 80 })
-        .toFile(path.join(uploadDir, logoNome));
-      logoUrl = `/uploads/servico_turista/${nomePastaLimpo}/${logoNome}`;
+    // 3. Grava de forma atômica (garante criação da pasta também para comprovante)
+    const caminhosGravados = gravarArquivos(uploadDir, arquivos);
+
+    try {
+      return await this.app.update(
+        id,
+        dto,
+        usuarioLogado,
+        logoUrl,
+        fotoUrl,
+        comprovanteUrl,
+        documentoCnpjUrl,
+      );
+    } catch (err) {
+      removerArquivos(caminhosGravados);
+      throw err;
     }
-
-    if (fotoFile) {
-      if (!fs.existsSync(uploadDir))
-        fs.mkdirSync(uploadDir, { recursive: true });
-      const fotoNome = `foto_${Date.now()}.webp`; 
-      await sharp(fotoFile.buffer)
-        .resize(500)
-        .webp({ quality: 80 })
-        .toFile(path.join(uploadDir, fotoNome));
-      fotoUrl = `/uploads/servico_turista/${nomePastaLimpo}/${fotoNome}`;
-    }
-
-    if (comprovanteFile) {
-      const ext = path.extname(comprovanteFile.originalname).toLowerCase();
-
-      if (ext === ".pdf") {
-        const comprovanteNome = `comprovante_${Date.now()}.pdf`;
-        fs.writeFileSync(
-          path.join(uploadDir, comprovanteNome),
-          comprovanteFile.buffer,
-        );
-        comprovanteUrl = `/uploads/servico_turista/${nomePastaLimpo}/${comprovanteNome}`;
-      } else {
-        const comprovanteNome = `comprovante_${Date.now()}.webp`;
-        await sharp(comprovanteFile.buffer)
-          .resize(800)
-          .webp({ quality: 80 })
-          .toFile(path.join(uploadDir, comprovanteNome));
-        comprovanteUrl = `/uploads/servico_turista/${nomePastaLimpo}/${comprovanteNome}`;
-      }
-    }
-
-    if (documentoCnpjFile) {
-      if (!fs.existsSync(uploadDir))
-        fs.mkdirSync(uploadDir, { recursive: true });
-      const ext = path.extname(documentoCnpjFile.originalname).toLowerCase();
-
-      if (ext === ".pdf") {
-        const documentoCnpjNome = `documento_cnpj_${Date.now()}.pdf`;
-        fs.writeFileSync(
-          path.join(uploadDir, documentoCnpjNome),
-          documentoCnpjFile.buffer,
-        );
-        documentoCnpjUrl = `/uploads/servico_turista/${nomePastaLimpo}/${documentoCnpjNome}`;
-      } else {
-        const documentoCnpjNome = `documento_cnpj_${Date.now()}.webp`;
-        await sharp(documentoCnpjFile.buffer)
-          .resize(800)
-          .webp({ quality: 80 })
-          .toFile(path.join(uploadDir, documentoCnpjNome));
-        documentoCnpjUrl = `/uploads/servico_turista/${nomePastaLimpo}/${documentoCnpjNome}`;
-      }
-    }
-
-    return this.app.update(
-      id,
-      dto,
-      usuarioLogado,
-      logoUrl,
-      fotoUrl,
-      comprovanteUrl,
-      documentoCnpjUrl,
-    );
   }
 
   // ==========================================

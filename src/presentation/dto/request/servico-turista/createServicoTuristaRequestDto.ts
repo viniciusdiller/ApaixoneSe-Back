@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsArray,
   IsBoolean,
+  IsDateString,
   ArrayMinSize,
   ValidateIf,
   MaxLength,
@@ -69,7 +70,7 @@ export class CreateServicoTuristaRequestDto {
     required: false,
   })
   @IsOptional()
-  @IsString()
+  @IsDateString({}, { message: "A data de validade informada é inválida." })
   validade?: string;
 
   // ==========================================

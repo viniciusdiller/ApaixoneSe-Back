@@ -65,14 +65,15 @@ export class ServicoTuristaApplication {
     return s;
   }
 
-  async update(
+  /**
+   * Busca o serviço e valida se o usuário logado pode alterá-lo (dono ou ADMIN)
+   * e se eventual mudança de status é permitida. Deve ser chamada ANTES de
+   * gravar arquivos no disco para evitar escrita órfã em requisições negadas.
+   */
+  async obterExistenteAutorizadoParaEdicao(
     id: string,
-    data: any,
     usuarioLogado: IUsuarioLogado,
-    logoUrl?: string,
-    fotoUrl?: string,
-    comprovanteUrl?: string,
-    documentoCnpjUrl?: string,
+    novoStatus?: StatusEstabelecimento,
   ) {
     const existente = await this.repo.findById(id);
     if (!existente) throw new NotFoundException("Serviço não encontrado.");
@@ -87,14 +88,32 @@ export class ServicoTuristaApplication {
     }
 
     if (
-      data.status &&
-      data.status !== existente.status &&
+      novoStatus &&
+      novoStatus !== existente.status &&
       usuarioLogado.perfil !== "ADMIN"
     ) {
       throw new ForbiddenException(
         "Apenas administradores podem alterar o status.",
       );
     }
+
+    return existente;
+  }
+
+  async update(
+    id: string,
+    data: any,
+    usuarioLogado: IUsuarioLogado,
+    logoUrl?: string,
+    fotoUrl?: string,
+    comprovanteUrl?: string,
+    documentoCnpjUrl?: string,
+  ) {
+    const existente = await this.obterExistenteAutorizadoParaEdicao(
+      id,
+      usuarioLogado,
+      data.status,
+    );
 
     if (data.status === StatusEstabelecimento.REJEITADO) {
       await this.repo.delete(id);
